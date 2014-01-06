@@ -2,36 +2,18 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin-top: 30px;
   text-align: left;
+  margin-left: 100px;
+  margin-right: 100px;
 }
 
 table.main {
   width: 800px;
-  margin: auto;
+  border-collapse: collapse;
 }
 
-td.topleft {
-  background-color: white;
-  padding: 5px;
-}
-
-td.topright {
-  background-color: white;
-  padding: 5px;
-  text-align: left;
-}
-
-td.bottomleft {
-  background-color: white;
-  padding: 5px;
-  text-align: right;
-  padding-right: 20px;
-  padding-top: 10px;
-}
-
-td.bottomright {
-  background-color: white;
-  padding: 5px;
-  text-align: left;
+table td, th {
+  border: 1px solid;
+  padding: 4px;
 }
 
 ul {
