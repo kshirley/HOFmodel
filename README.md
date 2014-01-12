@@ -3,8 +3,12 @@ using [knitr](http://yihui.name/knitr/) and meant to be fully reproducible. The 
 were cloned from [@cscheid](https://github.com/cscheid)'s
 [mlb-hall-of-fame-voting](https://github.com/cscheid/mlb-hall-of-fame-voting?source=c) repo.
 
+<<<<<<< HEAD
 Update [1/5/2014]:
 I fit a few simple models in R to predict the voting percentage of all the candidates on the 2014 HOF ballot. You can see the results here:
+=======
+Update [1/5/2014]: I fit a few simple models in R to predict the voting percentage of all the candidates on the 2014 HOF ballot. You can see the results here:
+>>>>>>> gh-pages
 
 http://kshirley.github.io/HOFmodel
 
