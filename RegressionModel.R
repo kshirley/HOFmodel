@@ -10,8 +10,8 @@ expit <- function(x) exp(x)/(1+exp(x))
 # Load a library to do Bayesian generalized linear models:
 library(arm)
 
-# Read in the data:
-data <- read.csv(file="HOFregression.csv", as.is=TRUE)
+# New data:
+data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
 n <- dim(data)[1]
 
 # get number of unique players:
@@ -19,7 +19,7 @@ np <- lu(data[, "Name"])
 
 # Get number of ballots each year:
 nb <- aggregate(data[, "NumBallots"], list(year=data[, "Year"]), median)[, 2]
-# I've assumed 569 for 2014, the same number as 2013
+# I've assumed 571 for 2015, the same number as 2014
 
 # Create variables for previous year's vote, for 1 up to 14 previous years:
 prev <- matrix(0, n, 14)
@@ -37,7 +37,7 @@ AllStarpy <- data[, "all.star"]/data[, "Yrs"]
 data <- cbind(data, AllStarpy)
 
 # Add indicators for 8 batting positions (DH is the baseline)
-for (i in c("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF")) assign(paste0("pos", i), as.numeric(data[, "position"] == i))
+for (i in c("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF")) assign(paste0("pos", i), as.numeric(data[, "Position"] == i))
 data <- cbind(data, posC, pos1B, pos2B, pos3B, posSS, posLF, posCF, posRF)
 
 # Add in previous year's vote squared
@@ -51,10 +51,14 @@ first.ballot.crowd <- matrix(NA, ny, 5)
 for (i in 1:ny) {
   for (k in 1:5) {
   	sel <- data[, "Year"] == su(data[, "Year"])[i] & data[, "YoB"] == 1
-  	first.ballot.crowd[i, k] <- mean(data[sel, "p"][1:k], na.rm=TRUE)
+  	if (i == 7) {  # special case for 1973, when Roberto Clemente was a special election:
+  	  first.ballot.crowd[i, k] <- mean(sort(data[sel & data[, "Name"] != "Roberto Clemente", "p"], decreasing=TRUE)[1:k], na.rm=TRUE)
+  	} else {
+  	  first.ballot.crowd[i, k] <- mean(sort(data[sel, "p"], decreasing=TRUE)[1:k], na.rm=TRUE)  	  
+  	}
   }
 }
-rownames(first.ballot.crowd) <- 1967:2014
+rownames(first.ballot.crowd) <- 1967:max(data[, "Year"])
 
 fb <- matrix(NA, n, 5)
 for (k in 1:5) fb[, k] <- first.ballot.crowd[(1:ny)[data[, "Year"] - 1966], k]
@@ -63,20 +67,18 @@ colnames(fb) <- paste0("top", 1:5)
 # Append these to the data:
 data <- cbind(data, fb)
 
-
 # Add the mean vote percentage of the top-5 returning ballot players in each year:
 return.ballot.crowd <- numeric(ny)
 for (i in 1:ny) {
   sel <- data[, "Year"] == su(data[, "Year"])[i] - 1 & data[, "YoB"] > 1 & data[, "YoB"] < 15
   if (sum(sel) > 0) {
-    return.ballot.crowd[i] <- mean(data[sel, "p"][1:5], na.rm=TRUE)
+    return.ballot.crowd[i] <- mean(sort(data[sel, "p"], decreasing=TRUE)[1:5], na.rm=TRUE)
   }
 }
 rb <- return.ballot.crowd[(1:ny)[data[, "Year"] - 1966]]
 
 # Append these to the data:
 data <- cbind(data, rb)
-
 
 # add a few career milestones that are thought to impact HOF voting:
 hr500 <- as.numeric(data[, "HR"] >= 500)
@@ -102,10 +104,10 @@ data <- cbind(data, ballot2.x.prev1)
 type <- numeric(n)
 
 # Type 1 = First-ballot batters:
-type[data[, "position"] != "P" & data[, "YoB"] == 1] <- 1
+type[data[, "Position"] != "P" & data[, "YoB"] == 1] <- 1
 
 # Type 2 = First-ballot pitchers:
-type[data[, "position"] == "P" & data[, "YoB"] == 1] <- 2
+type[data[, "Position"] == "P" & data[, "YoB"] == 1] <- 2
 
 # Type 3 = 2nd or more time on ballot:
 type[data[, "YoB"] > 1] <- 3
@@ -152,17 +154,17 @@ pred.mat <- matrix(NA, n, 5)
 qbounds <- function(x) quantile(x, c(0.025, 0.250, 0.500, 0.750, 0.975))
 
 coef <- as.list(rep(NA, nt))
-lt <- length(1997:2014)
+lt <- length(1997:max(data[, "Year"]))
 for (j in 1:nt){
   coef[[j]] <- matrix(NA, lt, length(var.names[[j]]) + 1)
   colnames(coef[[j]]) <- c("Intercept", var.names[[j]])
-  rownames(coef[[j]]) <- 1997:2014
+  rownames(coef[[j]]) <- 1997:max(data[, "Year"])
 }
 
 in.samp <- matrix(NA, lt, nt)
 
 # Loop through years and positions (batter vs. pitcher):
-for (t in 1997:2014) {
+for (t in 1997:max(data[, "Year"])) {
   print(t)
   for (j in 1:nt) {
 
@@ -192,8 +194,8 @@ for (t in 1997:2014) {
 
     if (sum(sel.test) > 0) {
       X.mat <- as.matrix(data[sel.test, var.names[[j]]])
-      if (t == 2014 & j == 3 & "top3" %in% var.names[[j]]) {
-      	X.mat[, "top3"] <- mean(pred[data[, "Year"] == 2014 & type %in% 1:2][1:3], na.rm=TRUE)
+      if (t > 2013 & j == 3 & "top3" %in% var.names[[j]]) {
+      	X.mat[, "top3"] <- mean(sort(pred[data[, "Year"] == t & type %in% 1:2], decreasing=TRUE)[1:3], na.rm=TRUE)
       }
       X.scale <- X.mat
       for (i in 1:dim(X.mat)[2]) {
@@ -209,10 +211,10 @@ for (t in 1997:2014) {
 }
 
 # For M1, M2, and M3, replace regression-based predictions for returning players with their prevoius year's values:
-pred[type == 3] <- data[type == 3, "prev1"]
+#pred[type == 3] <- data[type == 3, "prev1"]
 
 # Look at overall rmse:
-sel.pred <- data[, "Year"] > 1996 & data[, "Year"] < 2014
+sel.pred <- data[, "Year"] > 1996 & data[, "Year"] < 2015
 rmse <- sqrt(mean((pred[sel.pred] - data[sel.pred, "p"])^2))
 
 # Break it down by type:
@@ -235,8 +237,9 @@ for (i in 1:lt) {
 # Plot in-sample vs. out-of-sample rmse:
 par(mfrow=c(1, 3))
 for (j in 1:3) {
-  plot(1997:2014, in.samp[, j], type="l", ylim=range(c(in.samp[, j], out.samp[-18, j])), las=1, ylab="RMSE", xlab="Year")
-  lines(1997:2013, out.samp[-18, j], lty=2)
+  plot(1997:max(data[, "Year"]), in.samp[, j], type="l", ylim=range(c(in.samp[, j], out.samp[-lt, j])), 
+       las=1, ylab="RMSE", xlab="Year")
+  lines(1997:(max(data[, "Year"]) - 1), out.samp[-lt, j], lty=2)
 }
 
 # Compute residuals:
@@ -245,7 +248,7 @@ resids <- data[sel.pred, "p"] - pred[sel.pred]
 # Look at residuals with nametags:
 sel.big <- abs(resids) > 0.1  # select big residuals to display names
 xl <- "Predicted Percentage"
-pdf(file="fig_residuals.pdf", width=9, height=6)
+pdf(file="fig_residuals_with2014.pdf", width=9, height=6)
 par(mfrow=c(1, 1))
 plot(pred[sel.pred], resids, type="n", las=1, ylab="Actual Vote % - Predicted Vote %", yaxt="n", xlim=c(0, 1.1), xlab=xl, xaxt="n")
 axis(2, at=seq(-1, 1, 0.2), labels=paste(seq(-100, 100, 20), "%", sep=""), las=1)
@@ -285,6 +288,15 @@ rownames(d2014) <- 1:dim(d2014)[1]
 # Just first-time ballots:
 first2014 <- d2014[d2014[, 2] == 0, ]
 rownames(first2014) <- 1:dim(first2014)[1]
+
+
+# 2014 results:
+sel2015 <- data[, "Year"] == 2015
+d2015 <- data.frame(Name=data[sel2015, "Name"], Previous=round(data[sel2015, "prev1"], 3)*100, 
+                    Predicted=round(pred[sel2015], 3)*100)
+d2015 <- d2015[order(d2015[, "Predicted"], decreasing=TRUE), ]
+rownames(d2015) <- 1:dim(d2015)[1]
+
                     
 
 # Top and bottom residuals:
@@ -321,7 +333,7 @@ dev.off()
 
 
 ### Create data.frame to create the table for the website:
-web <- cbind(data[, c("Name", "position", "YoB")], round(data[, "prev1"], 3)*100, 
+web <- cbind(data[, c("Name", "Position", "YoB")], round(data[, "prev1"], 3)*100, 
              round(pred, 3)*100, round(pred.mat[, c(2, 4, 1, 5)], 3)*100)
 colnames(web) <- c("Name", "Position", "Year.On.Ballot", "2013 Vote", "2014 Prediction", 
                    "Lower 50%", "Upper 50%", "Lower 95%", "Upper 95%")
@@ -354,32 +366,62 @@ col.name <- ifelse(web[, 3] == "P" & web[, 4] == 1, "blue", ifelse(web[, 3] != "
 
 
 ### Create the plot:
-pdf(file="fig_2014_intervals.pdf", height=6, width=8)
-par(mar=c(5, 1, 1, 1))
+pred.vec <- data[data[, "Year"] == 2014, "p"][match(web[, 2], data[data[, "Year"] == 2014, "Name"])]*100
+pt <- ifelse(pred.vec > web[, 10], web[, 10], ifelse(pred.vec < web[, 9], web[, 9], pred.vec))
+
+pdf(file="fig_2014_intervals_updated.pdf", height=6, width=8)
+par(mar=c(5, 1, 1, 1), mfrow=c(1, 1))
 plot(web.table[, 5], nw:1, xlim=c(-10, 100), bty="n", xaxt="n", yaxt="n", xlab="Predicted 2014 Voting Percentage", 
      ylab="", type="n")
 polygon(c(0, 100, 100, 0), c(0, 0, nw + 1, nw + 1), col=gray(0.85), border=NA)
 abline(v=seq(0, 100, by=10), col="white")
-lines(c(75, 75), c(10, nw+1), col=3, lty = 1)
+lines(c(75, 75), c(10, nw + 1), col=3, lty = 1)
 lines(c(5, 5), c(0, nw + 1), col=2, lty = 1)
 points(web.table[, 5], nw:1, pch=1, cex=0.6)
 axis(1, at=seq(0, 100, 10), labels=paste0(seq(0, 100, 10), "%"), cex=0.6)
 for (i in 1:nw) {
   lines(c(web[i, 9], web[i, 10]), nw - c(i - 1, i - 1))
-  lines(c(web[i, 7], web[i, 7]), nw - c(i - 1.3, i - 0.7))
-  lines(c(web[i, 8], web[i, 8]), nw - c(i - 1.3, i - 0.7))
+  #lines(c(web[i, 8], web[i, 8]), nw - c(i - 1.3, i - 0.7))
+  #lines(c(web[i, 7], web[i, 7]), nw - c(i - 1.3, i - 0.7))
+  lines(c(web[i, 9], web[i, 9]), nw - c(i - 1.3, i - 0.7))
+  lines(c(web[i, 10], web[i, 10]), nw - c(i - 1.3, i - 0.7))
+  lines(c(pred.vec[i], pt[i]), c(nw - c(i - 1, i - 1)), col="purple", lty=2)
 }  
-text(web[, 9], nw:1, web[, 2], pos=2, cex=0.6, col=col.name)
+text(pmin(web[, 9], pred.vec), nw:1, web[, 2], pos=2, cex=0.6, col=col.name)
 leg.text <- c("5% cutoff: Won't appear on future ballots", "75% cutoff: Inducted into HOF", 
-              "50% prediction intervals", "95% prediction intervals", "Point prediction")
-legend(62, 8, pch=c(73, 73, 73, 45, 1), col=c(2, 3, 1, 1, 1), legend=leg.text, cex=0.6, title="Symbol Legend")
+              "95% prediction intervals", "Point prediction", "Actual Voting Percentage")
+legend(62, 8, pch=c(73, 73, 73, 1, 4), col=c(2, 3, 1, 1, "purple"), legend=leg.text, cex=0.6, title="Symbol Legend")
 leg.text2 <- c("First-ballot batter", "First-ballot pitcher", "Returning ballot")
 legend(32, 8, pch=c(NA, NA, NA), text.col=c("orange", "blue", "black"), legend=leg.text2, cex=0.6, 
        title="Player Color Legend", title.col="black")
+# update the plot:
+points(pred.vec, nw:1, pch=4, col="purple", lwd=2)
 dev.off()
 
 
 
+
+
+
+
+
+# Updates after the 2014 results:
+rmse.2014 <- sqrt(mean((data[data[, "Year"] == 2014, "p"] - pred[data[, "Year"] == 2014])^2))
+
+# residuals for 2014:
+r <- data[data[, "Year"] == 2014, "p"] - pred[data[, "Year"] == 2014]
+a <- data[data[, "Year"] == 2014, "p"]
+
+# biggest dropoffs in years 2-15:
+sel.drop <- data[, "YoB"] > 1 & data[, "Year"] < 2015
+drop <- data[sel.drop, "p"] - data[sel.drop, "prev1"]
+
+drop.table <- cbind(data[sel.drop, c("Name", "Year", "YoB", "p", "prev1")], Drop=round(drop, 3)*100)
+drop.table <- drop.table[order(drop.table[, "Drop"]), ]
+drop.table[1:10, ]
+
+mm <- match(d2014[, 1], data[data[, "Year"] == 2014, "Name"])
+cbind(d2014, Actual=round(a[mm], 3)*100, Residual=round(r[mm], 3)*100)
 
 
 

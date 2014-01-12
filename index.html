@@ -14,10 +14,184 @@
 <p style='text-align:center'>
 <i>by Kenny Shirley</i>
 <br>
-<i>January 5, 2014</i>
+<i>January 2014</i>
 </p>
 
-<h2>Introduction</h2>
+<hr>
+
+<h1 id='Update'>Update</h2>
+<p><i>January 12, 2014</i></p>
+
+<p>
+The 2014 Baseball HOF <a href='http://www.bbwaa.com'>voting results</a> were announced on Wednesday, January 8th, and three players, Greg Maddux, Tom Glavine, and Frank Thomas, all of whom were first-ballot candidates, were elected, receiving votes on about 97%, 91%, and 83% of the 571 ballots. Our model's predictions were... a little off, to say the least. We got Maddux almost exactly right, but we completely whiffed on Thomas and Glavine (whom we predicted to get 64% and 53% of the vote, respectively). Details below in 3 sections:
+</p>
+
+<ol>
+<li>Here is a <a href='#Recap'>recap and discussion of the 2014 results</a>.</li>
+<li>Here are our <a href='#2015'>2015 predictions</a>.</li>
+<li>And here's a link to our <a href='#Intro'>original post</a>, describing our statistical models for HOF voting and the predictions for 2014.</li>
+</ol>
+
+
+<h2 id='Recap'>Recap of the 2014 Results</h2>
+Here are a few thoughts on the accuracy of our 2014 predictions, which are summarized in the updated plot here:
+
+<div style="width:100%; text-align:center">
+<img src='fig_2014_intervals_updated.jpg' width=900 height=675>
+</div>
+
+<!--
+<pre>
+              Name Previous Predicted Actual Residual
+1      Greg Maddux      0.0      97.4   97.2     -0.2
+2     Craig Biggio     68.2      74.2   74.8      0.6
+3      Jack Morris     67.7      70.8   61.5     -9.3
+4      Mike Piazza     57.8      64.3   62.2     -2.1
+5     Frank Thomas      0.0      64.1   83.7     19.6
+6     Jeff Bagwell     59.6      61.0   54.3     -6.7
+7      Tom Glavine      0.0      53.5   91.9     38.4
+8       Tim Raines     52.2      53.4   46.1     -7.3
+9        Lee Smith     47.8      48.4   29.9    -18.4
+10    Mike Mussina      0.0      42.4   20.3    -22.1
+11  Curt Schilling     38.8      39.2   29.2     -9.9
+12   Roger Clemens     37.6      37.4   35.4     -2.0
+13     Barry Bonds     36.2      35.4   34.7     -0.7
+14  Edgar Martinez     35.9      33.7   25.2     -8.5
+15   Alan Trammell     33.6      30.9   20.8    -10.1
+16    Larry Walker     21.6      17.9   10.2     -7.8
+17    Fred McGriff     20.7      17.1   11.7     -5.4
+18    Mark McGwire     16.9      13.8   11.0     -2.8
+19   Don Mattingly     13.2      11.1    8.2     -2.9
+20      Sammy Sosa     12.5       9.6    7.2     -2.4
+21   Luis Gonzalez      0.0       9.5    0.9     -8.6
+22     Moises Alou      0.0       8.8    1.1     -7.7
+23 Rafael Palmeiro      8.8       8.4    4.4     -4.0
+24       Jeff Kent      0.0       5.2   15.2     10.0
+25    Kenny Rogers      0.0       2.5    0.2     -2.3
+26 Armando Benitez      0.0       1.4    0.2     -1.2
+27      Sean Casey      0.0       1.0    0.0     -1.0
+28      Ray Durham      0.0       0.6    0.0     -0.6
+29      Eric Gagne      0.0       0.3    0.4      0.1
+30       J.T. Snow      0.0       0.3    0.4      0.1
+31      Todd Jones      0.0       0.3    0.0     -0.3
+32      Hideo Nomo      0.0       0.2    1.1      0.9
+33   Richie Sexson      0.0       0.2    0.0     -0.2
+34     Mike Timlin      0.0       0.2    0.0     -0.2
+35    Paul Lo Duca      0.0       0.1    0.0     -0.1
+36    Jacque Jones      0.0       0.1    0.2      0.1
+</pre>
+-->
+
+<ol>
+<li>The one-year ahead RMSE over the past 17 years (1997-2013) was about 9.1%, and for 2014's 36 candidates, it was 9.9%, so by this measure the model performed roughly as well in 2014 as it would have over the past couple of decades. The RMSE, I now realize, isn't really the best measure of accuracy, though. The truth is that the model can easily make accurate predictions at the very low end of the scale (players with 1% or 2% of the vote), but the predictions in the middle of the scale are much less accurate than suggested by the overall RMSE of about 9-10%. A more relevant measure of model accuracy might be the RMSE for those players whose vote totals fall between 10% and 90%, or something like that.</li>
+<li>For first-ballot players with predictions above 5% we did pretty poorly. Besides Maddux (residual of -0.2%), our residuals for these players were all large: +19.6% (Frank Thomas), +38.4% (Tom Glavine), -22.1% (Mike Mussina), -8.6% (Luis Gonzalez), -7.7% (Moises Alou), and +10.0% (Jeff Kent).</li>
+<li>Regarding Glavine vs. Mussina: Maybe a variable measuring postseason success could have separated these two players, and pushed each of their predictions in the right direction (Glavine up, and Mussina down). But I've also read a few columns describing how they had very similar careers, including postseason statistics (like <a href='http://www.reddit.com/r/baseball/comments/1uw8z6/mussina_vs_glavine_whos_better/'>this thread on reddit</a>). Maybe a <i>team</i>'s success should be a variable in a player's HOF voting percentage, as the 90's Braves were better than the 90's Orioles.</li>
+<li>Regarding Frank Thomas: I think for future models I'll try an interaction term between association with steroids (our 'drugs' variable in the model) and slugging statistics, whether it's HRs, RBIs, or SLG. The effect of association with drugs surely isn't the same for everyone -- it probably varies with how great a slugger you became (i.e. pulling down great sluggers more than mediocre sluggers). If this is true, I think the value of untainted HRs would increase, and perhaps Thomas's 2014 prediction would increase to a level closer to his actual voting percentage of 83%.</li>
+<li>Lee Smith's voting percentage dropped from 47.8% to 29.9%, which was the third largest dropoff in HOF voting history since 1967! (Notice that Trammell also dropped by a lot this year).
+<pre>
+            Name Year YoB  Percentage  Previous   Drop
+1     Luis Tiant 1989   2        10.5      30.9  -20.4
+2    Maury Wills 1982   5        21.9      40.6  -18.7
+3      Lee Smith 2014  12        29.9      47.8  -17.9
+4     Tony Oliva 1989   8        30.2      47.3  -17.1
+5  Mickey Lolich 1989   5        10.5      25.5  -15.0
+6    Jim Bunning 1979   3        34.0      47.8  -13.8
+7   Harvey Kuenn 1989  13        25.7      39.3  -13.6
+8       Jim Rice 1999   5        29.4      42.9  -13.5
+9  Alan Trammell 2014  13        20.8      33.6  -12.8
+10     Ken Boyer 1989  10        13.9      25.5  -11.6
+</pre>
+</li>
+<li>Regarding all returning ballot players: We overestimated <i>every single one</i> of their 2014 voting percentages, except for Craig Biggio. This is pretty awful. But one reason for this mistake is clear: the 'top-3 first ballot' variable (first described <a href='#m4'>here</a>). This variable is the mean of the top-3 estimated first-ballot voting percentages, and the returning ballot voting percentages are negatively correlated with it. We underestimated the first-year percentages for Thomas and Glavine, and thus, this underestimate of the 'top-3 first ballot' variable caused the model to <i>over</i>estimate the voting percentages for all the returning players. I don't know exactly what to do about this. Because of the 10-player maximum per ballot, there is naturally a negative correlation between any pair of voting percentages, which causes poor predictions for some players to, in turn, create poor predictions for other players. I guess this is just an interesting aspect of the problem. A multivariate model would allow us to estimate these correlations, but we don't have access to all the individual ballot data, so fitting such a model would be tough.
+</li>
+<li>Last, I realized that I coded Frank Thomas as a 1B, rather than a DH, even though he played more games at DH than 1B over the course of his career, and 'majority of games played' is how every other player's position is defined. His prediction would have been 63.4%, rather than 64.1%, if he had been properly coded as a DH.
+</li>
+
+
+<h2 id='2015'>Our Predictions for 2015</h2>
+
+<p>
+The great thing about using only a player's career statistics to predict his HOF voting percentage is that we can make predictions for next year right away! Without further ado, here are our model's predictions for the 2015 HOF vote (using a projected ballot from baseball-reference.com, since the real ballot has not yet been finalized and released).
+</p>
+
+<pre>
+                Name Previous Predicted
+1      Randy Johnson      0.0      99.7
+2     Pedro Martinez      0.0      92.4
+3        John Smoltz      0.0      71.5
+4       Craig Biggio     74.8      69.3
+5        Mike Piazza     62.2      59.3
+6       Jeff Bagwell     54.3      51.4
+7         Tim Raines     46.1      42.0
+8      Roger Clemens     35.4      29.4
+9        Barry Bonds     34.7      28.6
+10         Lee Smith     29.9      23.5
+11    Curt Schilling     29.2      22.7
+12    Edgar Martinez     25.2      18.8
+13     Alan Trammell     20.8      14.9
+14      Mike Mussina     20.3      13.8
+15 Nomar Garciaparra      0.0      11.2
+16         Jeff Kent     15.2       9.9
+17      Fred McGriff     11.7       8.7
+18      Mark McGwire     11.0       8.3
+19      Larry Walker     10.2       7.9
+20     Don Mattingly      8.2       7.8
+21        Sammy Sosa      7.2       6.5
+22     Troy Percival      0.0       5.6
+23    Carlos Delgado      0.0       2.9
+24        Tom Gordon      0.0       1.4
+25       Brian Giles      0.0       1.0
+26      Darin Erstad      0.0       0.9
+27    Gary Sheffield      0.0       0.6
+28      Mark Loretta      0.0       0.6
+29       Cliff Floyd      0.0       0.5
+30      Jermaine Dye      0.0       0.5
+31     Jason Schmidt      0.0       0.2
+32      Rich Aurilia      0.0       0.2
+33        Tony Clark      0.0       0.1
+34         B.J. Ryan      0.0       0.1
+35    Eddie Guardado      0.0       0.1
+36   Jarrod Washburn      0.0       0.0
+37    Kelvim Escobar      0.0       0.0
+38         Paul Byrd      0.0       0.0
+39         Joe Crede      0.0       0.0
+40    David Weathers      0.0       0.0
+41     Braden Looper      0.0       0.0
+42    Julian Tavarez      0.0       0.0
+43       Alan Embree      0.0       0.0
+44       Ron Villone      0.0       0.0
+</pre>
+
+<p>
+How interesting! I think the top 3 predictions are pretty decent: everybody thinks Johnson and Martinez are shoo-ins, and I think the consensus is that Smoltz is closer to the 75% borderline (rather than being an automatic first-ballot guy). Because there are three strong first-ballot candidates, the predictions for all the rest of the returning candidates are lower than their 2014 results, which I think will not be accurate for Biggio -- he's almost sure to get in on his third ballot, in my opinion. I also expect Mussina's voting percentage to rise over the years.
+</p>
+
+<p>
+The predictions for first-ballot players Nomar Garciaparra, Carlos Delgado, and Gary Sheffield are quite low -- especially Sheffield (less than 1%)! If I were to manually adjust the 2015 predictions for first-ballot players, I'd bump up the predictions for Sheffield and Delgado to around the 10%-20% range.
+</p>
+
+<p>
+I'll come back throughout the year to post improvements to the model as I play around with it, and hopefully by December 2014 I'll have a full set of prediction for 2015's ballot, including intervals to measure the uncertainty of the predictions, that look realistic.
+</p>
+
+<p>
+I should also acknowledge that I'm not the only person making HOF predictions. I've enjoyed reading the work of 
+<a href='http://baseballpastandpresent.com/2013/12/15/2014-hall-fame-election-forecast/'>Bill Deane</a>, 
+<a href='http://www.hardballtimes.com/main/article/wednesdays-cooperstown-results-today-2014-edition/'>Chris Jaffe</a>, 
+and <a href='http://www.seanlahman.com/2008/12/predicting-the-hof-vote/'>Sean Lahman</a>, among others. Hopefully the models I'm fitting and describing here add to the conversation.
+</p>
+
+<p>
+<i>Kenny Shirley</i>
+<br>
+<i> January 12, 2014</i>
+</p>
+
+
+<hr>
+
+<h1 id='Intro'>Introduction</h1>
+<p><i>January 5, 2014</i></p>
 
 <p>
 Last January, after the 2013 Baseball Hall of Fame voting results were announced, 
@@ -839,9 +1013,9 @@ I chose not to use statistics like WAR, OPS.Plus, or other relatively new "SABRm
 Thanks to Carson Sievert, Carlos Scheidegger, and Chris Volinsky for help with code, visualization, and model suggestions.
 </p>
 
-Kenny Shirley
+<i>Kenny Shirley</i>
 <br>
-January 5th, 2014
+<i>January 5th, 2014</i>
 
 <br>
 <br>
