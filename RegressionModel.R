@@ -1,6 +1,6 @@
 # Load a few libraries and set working directory:
 rm(list=ls())
-setwd("~/Stats/HOFmodel/")
+setwd("~/Git/HOFmodel/")
 lu <- function(x) length(unique(x))
 su <- function(x) sort(unique(x))
 count.na <- function(x) sum(is.na(x))
@@ -11,7 +11,8 @@ expit <- function(x) exp(x)/(1+exp(x))
 library(arm)
 
 # New data:
-data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
+#data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
+data <- read.csv(file="HOFregression.csv", as.is=TRUE)
 n <- dim(data)[1]
 
 # get number of unique players:
@@ -214,7 +215,7 @@ for (t in 1997:max(data[, "Year"])) {
 #pred[type == 3] <- data[type == 3, "prev1"]
 
 # Look at overall rmse:
-sel.pred <- data[, "Year"] > 1996 & data[, "Year"] < 2015
+sel.pred <- data[, "Year"] > 1996 & data[, "Year"] < 2014
 rmse <- sqrt(mean((pred[sel.pred] - data[sel.pred, "p"])^2))
 
 # Break it down by type:
@@ -446,3 +447,11 @@ abline(h = 0, lty=2)
 
 
 # end of file
+
+
+
+library(knitr)
+knit("HOF_vis_model.Rmd")
+# pandoc -s -S -i -t dzslides --mathjax HOF_vis_model.md -o HOF_vis_model.html
+
+

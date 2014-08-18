@@ -1,0 +1,76 @@
+# command to convert markdown to html:
+pandoc -s -S -i -t dzslides --mathjax knitr-slides.md -o knitr-slides.html
+
+
+# Outline for the talk:
+
+1. Title
+
+2. About Me
+
+3. Collaborators (pics of Carlos, Carson)
+
+4. Outline
+ - Baseball Hall of Fame voting is awful
+ - If you can't beat 'em, join 'em
+ - Visualize the data
+ - Model the outcome
+
+------
+Intro:
+------
+
+5. Baseball HOF fame voting is awful
+ - Quotes?
+
+6. Rules
+
+7. Statisics (how many years it takes, how many have been inducted)
+
+8. Major problems
+
+Part 1: Visualize the data
+
+10. Getting the data
+
+11. A few plots in R
+
+12. d3 (examples? gallery?)
+
+13. Two main parts:
+
+(a) Plot of voting % vs. year
+(b) histograms for each statistical category
+
+14. Demo?
+
+Part 2: Model the data and make predictions
+
+14.5 What have others done?
+ - JAWS
+ - Bill James
+ - Michael Freiman's paper in JQAS a few years back...
+
+15. Back to the data: what predictors should we use?
+
+16. A simple model: lay out the equation
+
+17. Show the R code to do logistic regression
+
+18. Show results of the regression
+
+19. Show the residuals
+
+20. Model 2 additional variables
+
+21. Model 2 residuals
+
+22. Model 3 additional variables
+
+23. Model 3 variables
+
+24. 2014 results
+
+25. 2015 predictions
+
+

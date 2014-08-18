@@ -2,6 +2,7 @@
 <head>
 <meta charset="utf-8">
   <meta name="author" content="Kenny Shirley" />
+  <meta name="dcterms.date" content="2014-08-19" />
   <title>Visualizing and Modeling Baseball Hall of Fame Voting</title>
   <style type="text/css">code{white-space: pre;}</style>
   <style type="text/css">
@@ -94,116 +95,164 @@ code > span.er { color: #ff0000; font-weight: bold; }
   /* The items to-be-selected */
   .incremental > *[aria-selected] ~ * { opacity: 0.2; }
 </style>
-  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 </head>
 <body>
 <section class="title">
   <h1 class="title">Visualizing and Modeling Baseball Hall of Fame Voting</h1>
   <h2 class="author">Kenny Shirley</h2>
-  <h3 class="date">2014/08/19</h3>
+  <h3 class="date">August 19, 2014</h3>
 </section>
-<section class="slide level1">
-
-<p>% Joint work with Carlos Scheidegger and Carson Sievert</p>
+<section id="collaborators" class="slide level1">
+<h1>Collaborators</h1>
+<p>Joint work with Carlos Scheidegger and Carson Sievert</p>
 </section>
-<section id="why" class="slide level1">
-<h1>Why</h1>
+<section id="about-me" class="slide level1">
+<h1>About Me</h1>
 <ul class="incremental">
-<li>after you finished typing <code>\documentclass{beamer}</code> and <code>\title{}</code>, I have finished my first slide with markdown</li>
-<li>far fewer commands to remember, e.g. to write bullet points, just begin with a dash “<code>-</code>” instead of <code>\begin{itemize}</code> and <code>\item</code>; how things can be simpler?</li>
-<li>I know you want math to show you are a statistician, e.g. <span class="math">\(f(k)={n \choose k}p^{k}(1-p)^{n-k}\)</span></li>
-<li>you do not need to maintain output – only maintain a source file</li>
-<li>HTML5/CSS3 is much more fun than LaTeX</li>
+<li>Long-time (~ 10 years) sports statistics researcher/hobbyist</li>
+<li>Undergrad thesis on the Markov model for baseball</li>
+<li>In statistics grad school, co-authored “Bayesball”, a relatively early (Bayesian) model for fielding that used location information about all batted balls.
+<ul class="incremental">
+<li>Our method was called SAFE = Spatial Aggregate Fielding Evaluation (Annals of Applied Statistics, 2009)</li>
+</ul></li>
+<li>I’ve also dabbled with some basketball and football statistics…</li>
 </ul>
 </section>
-<section id="a-bit-r-code" class="slide level1">
-<h1>A bit R code</h1>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(cars)</code></pre>
-<pre><code>##   speed dist
-## 1     4    2
-## 2     4   10
-## 3     7    4
-## 4     7   22
-## 5     8   16
-## 6     9   10</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cor</span>(cars)</code></pre>
-<pre><code>##        speed   dist
-## speed 1.0000 0.8069
-## dist  0.8069 1.0000</code></pre>
+<section id="todays-outline" class="slide level1">
+<h1>Today’s Outline</h1>
+<ul class="incremental">
+<li>Baseball Hall of Fame voting is awful</li>
+<li>But… if you can’t beat ’em, join ’em</li>
+<li>Visualize the data</li>
+<li>Model the outcome</li>
+</ul>
 </section>
-<section id="graphics-too" class="slide level1">
-<h1>Graphics too</h1>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
-<span class="kw">qplot</span>(speed, dist, <span class="dt">data =</span> cars) +<span class="st"> </span><span class="kw">geom_smooth</span>()</code></pre>
+<section id="introduction" class="slide level1">
+<h1>Introduction</h1>
+</section>
+<section id="baseball-hof-fame-voting-is-awful" class="slide level1">
+<h1>Baseball HOF fame voting is awful</h1>
+</section>
+<section id="first-the-rules" class="slide level1">
+<h1>First, the rules:</h1>
+<p>A player can appear on the ballot after having played for at least 10 years and having been retired for at least 5 years.</p>
+</section>
+<section id="first-the-rules-1" class="slide level1">
+<h1>First, the rules:</h1>
+<p>A committee chooses who appears on the ballot, and they are… “generous”</p>
+</section>
+<section id="first-the-rules-2" class="slide level1">
+<h1>First, the rules:</h1>
+<p>A committee chooses who appears on the ballot.</p>
+<p>They are… “generous”</p>
 <figure>
-<img src="figure/graphics.png" alt="A scatterplot of cars" /><figcaption>A scatterplot of <code>cars</code></figcaption>
+<img src="figures/cirillo.jpg" alt="cirillo" /><figcaption>cirillo</figcaption>
 </figure>
+<p>Jeff Cirillo, 3B, 1994 - 2007: .296 BA, 112 HR, 32 WAR, 2 All-Star Teams</p>
 </section>
-<section id="how" class="slide level1">
-<h1>How</h1>
+<section id="first-the-rules-3" class="slide level1">
+<h1>First, the rules:</h1>
+<p>A committee chooses who appears on the ballot.</p>
+<p>They are… “generous” <img src="figures/burnitz.jpg" alt="burnitz" /></p>
+<p>Jeromy Burnitz, OF, 1993 - 2006: .253 BA, 315 HR, 17.4 WAR, 1 All-Star Team</p>
+</section>
+<section id="first-the-rules-4" class="slide level1">
+<h1>First, the rules:</h1>
+<p>A committee chooses who appears on the ballot.</p>
+<p>They are… “generous” <img src="figures/plesac.jpg" alt="plesac" /></p>
+<p>Dan Plesac, P, 1986 - 2003: 65 - 71 Win-Loss, 3.64 ERA, 17.2 WAR, 3 All-Star Teams</p>
+</section>
+<section id="more-rules" class="slide level1">
+<h1>More Rules:</h1>
+<ol class="incremental" start="3" type="1">
+<li>About 570 members of the Baseball Writers Association of America vote each year in December, with results announced in January</li>
+<li>You must appear on at least 75% of the ballots to be elected</li>
+<li>Sometime in the 1960s they started to enforce the rule that if you appear on less than 5% of ballots, you are permanently removed from future ballots.</li>
+<li>A player may appear on a maximum of 15 ballots (i.e. consecutive years) before being permanently removed.</li>
+</ol>
+</section>
+<section id="statistics-how-many-years-it-takes-how-many-have-been-inducted" class="slide level1">
+<h1>Statistics (how many years it takes, how many have been inducted)</h1>
+</section>
+<section id="major-problems" class="slide level1">
+<h1>Major problems</h1>
+</section>
+<section id="part-1-visualize-the-data" class="slide level1">
+<h1>Part 1: Visualize the data</h1>
+</section>
+<section id="getting-the-data" class="slide level1">
+<h1>Getting the data</h1>
+</section>
+<section id="a-few-plots-in-r" class="slide level1">
+<h1>A few plots in R</h1>
+</section>
+<section id="using-d3-examples-gallery" class="slide level1">
+<h1>Using d3 (examples? gallery?)</h1>
+</section>
+<section id="two-main-parts-of-the-visualization" class="slide level1">
+<h1>Two main parts of the visualization</h1>
 <ul class="incremental">
-<li>source editor: <a href="http://www.rstudio.org/">RStudio</a> (perfect integration with <a href="http://yihui.name/knitr/"><strong>knitr</strong></a>; one-click compilation); currently you have to use the version &gt;= 0.96.109</li>
-<li>HTML5 slides converter: <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>; this document was generated by: <code>pandoc -s -S -i -t dzslides --mathjax knitr-slides.md -o knitr-slides.html</code></li>
-<li>the file <a href="https://github.com/yihui/knitr-examples/blob/master/009-slides.md"><code>knitr-slides.md</code></a> is the markdown output from its <a href="https://github.com/yihui/knitr-examples/blob/master/009-slides.Rmd">source</a>: <code>library(knitr); knit('knitr-slides.Rmd')</code></li>
-<li>or simple click the button <code>Knit HTML</code> in RStudio</li>
+<li>Plot of voting % vs. year</li>
+<li>histograms for each statistical category</li>
 </ul>
 </section>
-<section id="for-ninjas" class="slide level1">
-<h1>For ninjas</h1>
+<section id="demo" class="slide level1">
+<h1>Demo</h1>
+</section>
+<section id="part-2-model-the-data-and-make-predictions" class="slide level1">
+<h1>Part 2: Model the data and make predictions</h1>
+</section>
+<section id="what-have-others-done" class="slide level1">
+<h1>What have others done?</h1>
 <ul class="incremental">
-<li>you should tweak the default style; why not try some <a href="http://www.google.com/webfonts">Google web fonts</a>? (think how painful it is to wrestle with fonts in LaTeX)</li>
-<li>pandoc provides 3 types of HTML5 slides (dzslides is one of them)</li>
-<li>you can tweak the default template to get better appearances</li>
-<li>if you have come up with a better dzslides template, please let me know or contribute to pandoc directly (e.g. <code>pre</code> blocks should have <code>max-width</code> and <code>max-height</code>)</li>
+<li>JAWS</li>
+<li>Bill James</li>
+<li>Michael Freiman’s paper in JQAS a few years back…</li>
 </ul>
 </section>
-<section id="for-beamer-lovers" class="slide level1">
-<h1>For beamer lovers</h1>
-<ul class="incremental">
-<li>pandoc supports conversion to beamer as well. period.</li>
-</ul>
+<section id="back-to-the-data-what-predictors-should-we-use" class="slide level1">
+<h1>Back to the data: what predictors should we use?</h1>
 </section>
-<section id="for-powerpoint-lovers" class="slide level1">
-<h1>For Powerpoint lovers</h1>
-<ul class="incremental">
-<li>…</li>
-</ul>
+<section id="a-simple-model-lay-out-the-equation" class="slide level1">
+<h1>A simple model: lay out the equation</h1>
 </section>
-<section id="reproducible-research" class="slide level1">
-<h1>Reproducible research</h1>
-<p>It is good to include the session info, e.g. this document is produced with <strong>knitr</strong>. Here is my session info:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">sessionInfo</span>(), <span class="dt">locale=</span><span class="ot">FALSE</span>)</code></pre>
-<pre><code>## R version 3.0.3 (2014-03-06)
-## Platform: x86_64-apple-darwin10.8.0 (64-bit)
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
-## 
-## other attached packages:
-## [1] ggplot2_0.9.3.1 knitr_1.6      
-## 
-## loaded via a namespace (and not attached):
-##  [1] codetools_0.2-8    colorspace_1.2-2   dichromat_2.0-0   
-##  [4] digest_0.6.3       evaluate_0.5.5     formatR_0.10      
-##  [7] grid_3.0.3         gtable_0.1.2       labeling_0.2      
-## [10] MASS_7.3-30        munsell_0.4.2      plyr_1.8.1        
-## [13] proto_0.3-10       RColorBrewer_1.0-5 Rcpp_0.11.1       
-## [16] reshape2_1.2.2     scales_0.2.3       stringr_0.6.2     
-## [19] tools_3.0.3</code></pre>
+<section id="show-the-r-code-to-do-logistic-regression" class="slide level1">
+<h1>Show the R code to do logistic regression</h1>
 </section>
-<section id="misc-issues" class="slide level1">
-<h1>Misc issues</h1>
-<ul class="incremental">
-<li>the plots are too wide? use the chunk option <code>out.width</code> which will be used in <code>&lt;img width=... /&gt;</code>, e.g. <code>out.width=400px</code></li>
-</ul>
+<section id="show-results-of-the-regression" class="slide level1">
+<h1>Show results of the regression</h1>
+</section>
+<section id="show-the-residuals" class="slide level1">
+<h1>Show the residuals</h1>
+</section>
+<section id="model-2-additional-variables" class="slide level1">
+<h1>Model 2 additional variables</h1>
+</section>
+<section id="model-2-residuals" class="slide level1">
+<h1>Model 2 residuals</h1>
+</section>
+<section id="model-3-additional-variables" class="slide level1">
+<h1>Model 3 additional variables</h1>
+</section>
+<section id="model-3-residuals" class="slide level1">
+<h1>Model 3 residuals</h1>
+</section>
+<section id="results" class="slide level1">
+<h1>2014 results</h1>
+</section>
+<section id="predictions" class="slide level1">
+<h1>2015 predictions</h1>
+</section>
+<section id="additional-templates" class="slide level1">
+<h1>Additional templates</h1>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(speed, dist, <span class="dt">data =</span> cars) +<span class="st"> </span><span class="kw">geom_smooth</span>()</code></pre>
+<p><img src="figure/graphics.png" title="A scatterplot of `cars`" alt="A scatterplot of `cars`" width="500" /></p>
 </section>
 <section id="last-slide" class="slide level1">
 <h1>Last Slide</h1>
-<ul class="incremental">
-<li>I just added this as a test:</li>
-</ul>
+<p>I just added this as a test:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>), <span class="kw">rnorm</span>(<span class="dv">100</span>), <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="kw">sample</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dv">100</span>, <span class="dt">replace=</span><span class="ot">TRUE</span>))</code></pre>
-<p><img src="figure/unnamed-chunk-1.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" width="300" /></p>
+<p><img src="figure/last-slide.png" title="plot of chunk last-slide" alt="plot of chunk last-slide" width="300" /></p>
 </section>
 <!-- {{{{ dzslides core
 #
