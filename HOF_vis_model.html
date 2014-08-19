@@ -1,8 +1,12 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
   <meta name="author" content="Kenny Shirley" />
-  <meta name="dcterms.date" content="2014-08-19" />
   <title>Visualizing and Modeling Baseball Hall of Fame Voting</title>
   <style type="text/css">code{white-space: pre;}</style>
   <style type="text/css">
@@ -24,661 +28,340 @@ code > span.al { color: #ff0000; font-weight: bold; }
 code > span.fu { color: #06287e; }
 code > span.er { color: #ff0000; font-weight: bold; }
   </style>
-<style>
-  html { background-color: black; }
-  body { background-color: white; border-radius: 12px}
-  /* A section is a slide. It's size is 800x600, and this will never change */
-  section {
-      font-family: Arial, serif;
-      font-size: 20pt;
-    }
-  address, blockquote, dl, fieldset, form, h1, h2, h3, h4, h5, h6, hr, ol, p, pre, table, ul, dl { padding: 10px 20px 10px 20px; }
-  h1, h2, h3 {
-    text-align: center;
-    margin: 10pt 10pt 20pt 10pt;
-  }
-  ul, ol {
-    margin: 10px 10px 10px 50px;
-  }
-  section.titleslide h1 { margin-top: 200px; }
-  h1.title { margin-top: 150px; }
-  h1 { font-size: 180%; }
-  h2 { font-size: 120%; }
-  h3 { font-size: 100%; }
-  q { quotes: "“" "”" "‘" "’"; }
-  blockquote { font-style: italic }
-  /* Figures are displayed full-page, with the caption on
-     top of the image/video */
-  figure {
-    background-color: black;
-  }
-  figcaption {
-    margin: 70px;
-  }
-  footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 40px;
-    text-align: right;
-    background-color: #F3F4F8;
-    border-top: 1px solid #CCC;
-  }
-
-  /* Transition effect */
-  /* Feel free to change the transition effect for original
-     animations. See here:
-     https://developer.mozilla.org/en/CSS/CSS_transitions
-     How to use CSS3 Transitions: */
-  section {
-      -moz-transition: left 400ms linear 0s;
-      -webkit-transition: left 400ms linear 0s;
-      -ms-transition: left 400ms linear 0s;
-      transition: left 400ms linear 0s;
-  }
-
-  /* Before */
-  section { left: -150%; }
-  /* Now */
-  section[aria-selected] { left: 0; }
-  /* After */
-  section[aria-selected] ~ section { left: +150%; }
-
-  /* Incremental elements */
-
-  /* By default, visible */
-  .incremental > * { opacity: 1; }
-
-  /* The current item */
-  .incremental > *[aria-selected] { color: red; opacity: 1; }
-
-  /* The items to-be-selected */
-  .incremental > *[aria-selected] ~ * { opacity: 0.2; }
-</style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
 </head>
 <body>
-<section class="title">
+<div class="slide titlepage">
   <h1 class="title">Visualizing and Modeling Baseball Hall of Fame Voting</h1>
-  <h2 class="author">Kenny Shirley</h2>
-  <h3 class="date">August 19, 2014</h3>
-</section>
-<section id="collaborators" class="slide level1">
-<h1>Collaborators</h1>
-<p>Joint work with Carlos Scheidegger and Carson Sievert</p>
-</section>
-<section id="about-me" class="slide level1">
+  <p class="author">
+Kenny Shirley
+  </p>
+  <p class="date">NYC Sports Analytics Meetup, August 19, 2014</p>
+</div>
+<div id="welcome-to-att-labs-at-33-thomas-street-in-nyc" class="slide section level1">
+<h1>Welcome to AT&amp;T Labs at 33 Thomas Street in NYC!</h1>
+<p><img src='figures/33thomas.jpg' height=500></p>
+<p>Built for machines; safe, secure, and habitable by humans.</p>
+</div>
+<div id="about-me" class="slide section level1">
 <h1>About Me</h1>
-<ul class="incremental">
+<ul>
 <li>Long-time (~ 10 years) sports statistics researcher/hobbyist</li>
 <li>Undergrad thesis on the Markov model for baseball</li>
-<li>In statistics grad school, co-authored “Bayesball”, a relatively early (Bayesian) model for fielding that used location information about all batted balls.
-<ul class="incremental">
+<li>In statistics grad school, co-authored &quot;Bayesball&quot;, a relatively early (Bayesian) model for fielding that used location information about all batted balls.
+<ul>
 <li>Our method was called SAFE = Spatial Aggregate Fielding Evaluation (Annals of Applied Statistics, 2009)</li>
 </ul></li>
-<li>I’ve also dabbled with some basketball and football statistics…</li>
+<li>I've also dabbled with some basketball and football statistics...</li>
 </ul>
-</section>
-<section id="todays-outline" class="slide level1">
-<h1>Today’s Outline</h1>
-<ul class="incremental">
-<li>Baseball Hall of Fame voting is awful</li>
-<li>But… if you can’t beat ’em, join ’em</li>
-<li>Visualize the data</li>
-<li>Model the outcome</li>
-</ul>
-</section>
-<section id="introduction" class="slide level1">
-<h1>Introduction</h1>
-</section>
-<section id="baseball-hof-fame-voting-is-awful" class="slide level1">
-<h1>Baseball HOF fame voting is awful</h1>
-</section>
-<section id="first-the-rules" class="slide level1">
-<h1>First, the rules:</h1>
-<p>A player can appear on the ballot after having played for at least 10 years and having been retired for at least 5 years.</p>
-</section>
-<section id="first-the-rules-1" class="slide level1">
-<h1>First, the rules:</h1>
-<p>A committee chooses who appears on the ballot, and they are… “generous”</p>
-</section>
-<section id="first-the-rules-2" class="slide level1">
-<h1>First, the rules:</h1>
-<p>A committee chooses who appears on the ballot.</p>
-<p>They are… “generous”</p>
-<figure>
-<img src="figures/cirillo.jpg" alt="cirillo" /><figcaption>cirillo</figcaption>
-</figure>
-<p>Jeff Cirillo, 3B, 1994 - 2007: .296 BA, 112 HR, 32 WAR, 2 All-Star Teams</p>
-</section>
-<section id="first-the-rules-3" class="slide level1">
-<h1>First, the rules:</h1>
-<p>A committee chooses who appears on the ballot.</p>
-<p>They are… “generous” <img src="figures/burnitz.jpg" alt="burnitz" /></p>
-<p>Jeromy Burnitz, OF, 1993 - 2006: .253 BA, 315 HR, 17.4 WAR, 1 All-Star Team</p>
-</section>
-<section id="first-the-rules-4" class="slide level1">
-<h1>First, the rules:</h1>
-<p>A committee chooses who appears on the ballot.</p>
-<p>They are… “generous” <img src="figures/plesac.jpg" alt="plesac" /></p>
-<p>Dan Plesac, P, 1986 - 2003: 65 - 71 Win-Loss, 3.64 ERA, 17.2 WAR, 3 All-Star Teams</p>
-</section>
-<section id="more-rules" class="slide level1">
-<h1>More Rules:</h1>
-<ol class="incremental" start="3" type="1">
-<li>About 570 members of the Baseball Writers Association of America vote each year in December, with results announced in January</li>
-<li>You must appear on at least 75% of the ballots to be elected</li>
-<li>Sometime in the 1960s they started to enforce the rule that if you appear on less than 5% of ballots, you are permanently removed from future ballots.</li>
-<li>A player may appear on a maximum of 15 ballots (i.e. consecutive years) before being permanently removed.</li>
+</div>
+<div id="todays-outline" class="slide section level1">
+<h1>Today's Outline</h1>
+<ol class='incremental'>
+<li>
+Introduction: Baseball Hall of Fame voting is awful
+</li>
+<li>
+But... if you can't beat 'em, join 'em
+</li>
+<li>
+Part 1: Visualize the data
+</li>
+<li>
+Part 2: Model the outcome
+</li>
 </ol>
-</section>
-<section id="statistics-how-many-years-it-takes-how-many-have-been-inducted" class="slide level1">
-<h1>Statistics (how many years it takes, how many have been inducted)</h1>
-</section>
-<section id="major-problems" class="slide level1">
-<h1>Major problems</h1>
-</section>
-<section id="part-1-visualize-the-data" class="slide level1">
+<p><img src='figures/halloffamebuilding.jpg' width=400></p>
+</div>
+<div id="collaborators" class="slide section level1">
+<h1>Collaborators</h1>
+<p>Joint work with:</p>
+<p>Carlos Scheidegger (University of Arizona)</p>
+<p>
+<img src='figures/cscheid.jpg' width='100'>
+</p>
+
+<p>and</p>
+<p>Carson Sievert (Iowa State University)</p>
+<p><img src='figures/sievert.png' width='100'></p>
+</div>
+<div id="introduction-baseball-hall-of-fame-voting-is-awful" class="slide section level1">
+<h1>Introduction: Baseball Hall of Fame voting is awful</h1>
+</div>
+<div id="first-the-rules" class="slide section level1">
+<h1>First, the rules:</h1>
+<ol class='incremental'>
+<li>
+A player can appear on the ballot after having played for at least 10 years and having been retired for at least 5 years.
+</li>
+<li>
+A committee chooses who appears on the ballot, and they are... &quot;generous&quot;
+</li>
+</ol>
+
+</div>
+<div id="jeff-cirillo" class="slide section level1">
+<h1>Jeff Cirillo</h1>
+<p><img src='figures/cirillo.jpg'></p>
+<p>Jeff Cirillo, 3B, 1994 - 2007: .296 BA, 112 HR, 32 WAR, 2 All-Star Teams, 2013 HOF ballot</p>
+</div>
+<div id="jeromy-burnitz" class="slide section level1">
+<h1>Jeromy Burnitz</h1>
+<p><img src='figures/burnitz.jpg'></p>
+<p>Jeromy Burnitz, OF, 1993 - 2006: .253 BA, 315 HR, 17.4 WAR, 1 All-Star Team, 2012 HOF ballot</p>
+</div>
+<div id="dan-plesac" class="slide section level1">
+<h1>Dan Plesac</h1>
+<p><img src='figures/plesac.jpg'></p>
+<p>Dan Plesac, P, 1986 - 2003: 65 - 71 Win-Loss, 3.64 ERA, 17.2 WAR, 3 All-Star Teams, 2009 HOF ballot</p>
+</div>
+<div id="these-are-just-a-few-players-who-have-appeared-on-the-ballot" class="slide section level1">
+<h1>These are just a few players who have appeared on the ballot</h1>
+<ol class='incremental'>
+<li>
+... and these are just some of the former Brewers!
+</li>
+<li>
+None of them received a single HOF vote, thankfully.
+</li>
+<li>
+Unlike:
+</li>
+<li>
+
+<pre><code>##               Name Year  WAR Votes NumBallots
+## 1     Jacque Jones 2014 11.5     1        571
+## 2      David Segui 2010  7.8     1        539
+## 3   Shawon Dunston 2008  9.1     1        543
+## 4       Walt Weiss 2006 14.6     1        520
+## 5      Randy Myers 2004 14.2     1        506
+## 6    Cecil Fielder 2004 14.7     1        506
+## 7       Mark Davis 2003  6.8     1        496
+## 8     Jim Deshaies 2001 10.2     1        515
+## 9  Steve Bedrosian 2001 13.2     1        515
+## 10      Ray Knight 1994 10.9     1        456</code></pre>
+</li>
+</ol>
+
+</div>
+<div id="more-rules" class="slide section level1">
+<h1>More Rules:</h1>
+<ul>
+<li>About 570 members (as of 2014) of the Baseball Writers Association of America (BBWAA) vote each year in December, with results announced in January</li>
+<li>A player must be selected on at least 75% of the returned ballots to be inducted into the HOF that year.</li>
+<li>In 1967 they started to enforce the rule that if you appear on less than 5% of ballots, you are permanently removed from future ballots.</li>
+<li>A player may appear on a maximum of 15 ballots (i.e. consecutive years) before being permanently removed.</li>
+<li>In a given year, each voter may vote for as few as 0 players, and as many as 10 players (where an average year's ballot contains about 40 players).</li>
+</ul>
+</div>
+<div id="some-statistics" class="slide section level1">
+<h1>Some Statistics</h1>
+<ol class='incremental'>
+<li>
+1936 was the first year of Hall of Fame voting
+</li>
+<li>
+Five players were elected:
+</li>
+<li>
+
+<pre><code>##   Year              Name Pos NumBallots Votes Percentage
+## 1 1936           Ty Cobb  OF        226   222     98.20%
+## 2 1936      Honus Wagner  SS        226   215     95.10%
+## 3 1936         Babe Ruth  OF        226   215     95.10%
+## 4 1936 Christy Mathewson   P        226   205     90.70%
+## 5 1936    Walter Johnson   P        226   189     83.60%</code></pre>
+</li>
+<li>
+From 1936 - 2014, 1089 unique players have appeared on the ballot
+</li>
+<li>
+112 have been elected, 47 on their first ballot appearance (<em>not</em> Lou Gehrig, Cy Young, Warren Spahn)
+</li>
+<li>
+Famously, no player has been unanimously elected.
+</li>
+<li>
+We consider 1967 to be the first year of 'modern' HOF voting (when the 5% rule was established)
+</li>
+</ol>
+
+</div>
+<div id="some-problems" class="slide section level1">
+<h1>Some Problems:</h1>
+<ol class='incremental' style='list-style-type:none'>
+<li>
+<p>Does it really take 15 years to decide?</p>
+</li>
+<li>
+<p>The so-called 'morals' clause, rule 5 out of 9:</p>
+<blockquote>
+<p>Voting: Voting shall be based upon the player's record, playing ability, integrity, sportsmanship, character, and contributions to the team(s) on which the player played.</p>
+</blockquote>
+<blockquote>
+<p>(from http://baseballhall.org/hall-famers/rules-election/BBWAA)</p>
+</blockquote>
+</li>
+<li>
+<p>The voters don't actively cover baseball!</p>
+<blockquote>
+<p>Q: Does that mean some Hall of Fame voters don’t even cover baseball any more?</p>
+</blockquote>
+<blockquote>
+<p>A: Yes. The BBWAA trusts that its voters take their responsibility seriously, and even those honorary members who are no longer covering baseball do their due diligence to produce a thoughtful ballot.</p>
+</blockquote>
+<blockquote>
+<p>(from http://bbwaa.com/voting-faq/)</p>
+</blockquote>
+</li>
+</ol>
+
+</div>
+<div id="some-responses" class="slide section level1">
+<h1>Some Responses:</h1>
+<ul>
+<li>Will Leitch: &quot;Voter Fraud&quot; 11/14/2013, sportsonearth.com</li>
+</ul>
+<blockquote>
+<p>Stupid things are called out as stupid, and people try to figure out how to correct them. It's encouraging. It's kinda nice. And then there is Baseball Hall of Fame voting.</p>
+</blockquote>
+<ul>
+<li>Jonathan Mahler: &quot;Kill The HOF Character Clause, For The Sake Of The Writers&quot;, 1/10/2013, deadspin.com</li>
+<li>Deadspin offered to buy a vote in 2013, and mainstream journalist Dan Le Batard (Miami Herald) gave his vote to the website (for no money). He was banned for life from voting on future HOF ballots.</li>
+</ul>
+</div>
+<div id="my-thoughts" class="slide section level1">
+<h1>My thoughts:</h1>
+<ul>
+<li>In a nutshell: the voting process is a phenomenon unto itself. It is not a yes-or-no question!</li>
+<li>We might as well embrace this, and study it.</li>
+<li>(Hasn't baseball always been famous for embracing the 'human element' of the game?)</li>
+</ul>
+</div>
+<div id="part-1-visualize-the-data" class="slide section level1">
 <h1>Part 1: Visualize the data</h1>
-</section>
-<section id="getting-the-data" class="slide level1">
+</div>
+<div id="getting-the-data" class="slide section level1">
 <h1>Getting the data</h1>
-</section>
-<section id="a-few-plots-in-r" class="slide level1">
+<ul>
+<li>Baseball Reference has it all! Fantastic website.</li>
+<li>Career statistics and voting percentages for each player, each year, from 1936-2014.</li>
+<li>We did a bit of web scraping to download and parse each year's ballot.</li>
+</ul>
+</div>
+<div id="a-few-plots-in-r" class="slide section level1">
 <h1>A few plots in R</h1>
-</section>
-<section id="using-d3-examples-gallery" class="slide level1">
-<h1>Using d3 (examples? gallery?)</h1>
-</section>
-<section id="two-main-parts-of-the-visualization" class="slide level1">
-<h1>Two main parts of the visualization</h1>
-<ul class="incremental">
-<li>Plot of voting % vs. year</li>
-<li>histograms for each statistical category</li>
+<p>We were really interested in the trajectories of voting percentages of players who had appeared on the ballot multiple times.</p>
+<pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="dt">file=</span><span class="st">&quot;HOFregression_updated.csv&quot;</span>, <span class="dt">as.is=</span><span class="ot">TRUE</span>)
+<span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))
+sel &lt;-<span class="st"> </span>data[, <span class="st">&quot;Name&quot;</span>] ==<span class="st"> &quot;Alan Trammell&quot;</span>
+<span class="kw">plot</span>(data[sel, <span class="st">&quot;Year&quot;</span>], data[sel, <span class="st">&quot;p&quot;</span>], <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">las=</span><span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&quot;Year&quot;</span>, 
+     <span class="dt">ylab=</span><span class="st">&quot;Voting Proportion&quot;</span>)
+<span class="kw">lines</span>(data[sel, <span class="st">&quot;Year&quot;</span>], data[sel, <span class="st">&quot;p&quot;</span>])
+<span class="kw">title</span>(<span class="dt">main=</span><span class="st">&quot;Alan Trammell&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">h =</span> <span class="fl">0.05</span>, <span class="dt">col=</span><span class="dv">2</span>, <span class="dt">lwd=</span><span class="dv">2</span>)
+<span class="kw">abline</span>(<span class="dt">h =</span> <span class="fl">0.75</span>, <span class="dt">col=</span><span class="dv">3</span>, <span class="dt">lwd=</span><span class="dv">2</span>)
+sel &lt;-<span class="st"> </span>data[, <span class="st">&quot;Name&quot;</span>] ==<span class="st"> &quot;Bert Blyleven&quot;</span>
+<span class="kw">plot</span>(data[sel, <span class="st">&quot;Year&quot;</span>], data[sel, <span class="st">&quot;p&quot;</span>], <span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">las=</span><span class="dv">1</span>, <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">xlab=</span><span class="st">&quot;Year&quot;</span>, 
+     <span class="dt">ylab=</span><span class="st">&quot;Voting Proportion&quot;</span>)
+<span class="kw">lines</span>(data[sel, <span class="st">&quot;Year&quot;</span>], data[sel, <span class="st">&quot;p&quot;</span>])
+<span class="kw">title</span>(<span class="dt">main=</span><span class="st">&quot;Bert Blyleven&quot;</span>)
+<span class="kw">abline</span>(<span class="dt">h =</span> <span class="fl">0.05</span>, <span class="dt">col=</span><span class="dv">2</span>, <span class="dt">lwd=</span><span class="dv">2</span>)
+<span class="kw">abline</span>(<span class="dt">h =</span> <span class="fl">0.75</span>, <span class="dt">col=</span><span class="dv">3</span>, <span class="dt">lwd=</span><span class="dv">2</span>)</code></pre>
+</div>
+<div id="a-few-plots-in-r-1" class="slide section level1">
+<h1>A few plots in R</h1>
+<p>We were really interested in the trajectories of voting percentages of players who had appeared on the ballot multiple times.</p>
+<p><img src="figure/edaplots2.png" title="plot of chunk edaplots2" alt="plot of chunk edaplots2" width="900" /></p>
+<p>How did these guys end up with such different voting trajectories?</p>
+</div>
+<div id="we-built-an-interactive-plot-using-d3" class="slide section level1">
+<h1>We built an interactive plot using D3</h1>
+<ul>
+<li>Link: http://cscheid.net/static/mlb-hall-of-fame-voting</li>
+<li>Two main parts of the visualization:
+<ul>
+<li>Brushable plot of voting % vs. year</li>
+<li>Linked histograms for each statistical category</li>
+</ul></li>
 </ul>
-</section>
-<section id="demo" class="slide level1">
-<h1>Demo</h1>
-</section>
-<section id="part-2-model-the-data-and-make-predictions" class="slide level1">
+</div>
+<div id="lots-of-interesting-trivia-was-uncovered-here" class="slide section level1">
+<h1>Lots of interesting trivia was uncovered here:</h1>
+<ul>
+<li>Lefty Grove vs. Orval Grove</li>
+<li>Runoff Elections</li>
+<li>Dips in voting percentages for most players when a group of strong first-ballot players appears (1999, 2007)</li>
+<li>Edd Roush's 19 ballots</li>
+<li>Minnie Minoso and Jose Rijo's comebacks</li>
+<li>Warren Spahn's early vote</li>
+<li>HR &gt; 400</li>
+<li>OPS &gt; .850</li>
+</ul>
+</div>
+<div id="part-2-model-the-data-and-make-predictions" class="slide section level1">
 <h1>Part 2: Model the data and make predictions</h1>
-</section>
-<section id="what-have-others-done" class="slide level1">
-<h1>What have others done?</h1>
-<ul class="incremental">
-<li>JAWS</li>
-<li>Bill James</li>
-<li>Michael Freiman’s paper in JQAS a few years back…</li>
+</div>
+<div id="the-obvious-next-question-is-can-we-predict-next-years-vote" class="slide section level1">
+<h1>The obvious next question is: Can we predict next year's vote?</h1>
+<ul>
+<li>Others have worked on this, of course:
+<ul>
+<li>JAWS: Jay Jaffe's 'Jaffe WAR Scoring System', an average of WAR and 'peak' WAR, normalized for position</li>
+<li>Bill James has a few systems. Hall of Fame Monitor, for example, as described on baseball-reference.com (leader glossary section):
+<pre style='white-space: pre-wrap'>
+[1] For Batting Average, 2.5 points for each season over .300, 5.0 for over .350, 15 for over .400. Seasons are not double-counted. I require 100 games in a season to qualify for this bonus.
+[2] For hits, 5 points for each season of 200 or more hits.
+[3] 3 points for each season of 100 RBI's and 3 points for each season of 100 runs.
+[4] 10 points for 50 home runs, 4 points for 40 HR, and 2 points for 30 HR.
+[5] 2 points for 45 doubles and 1 point for 35 doubles.
+[6] 8 points for each MVP award and 3 for each AllStar Game, and 1 point for a Rookie of the Year award.
+[7] 2 points for a gold glove at C, SS, or 2B, and 1 point for any other gold glove.
+[8] 6 points if they were the regular SS or C on a WS winning team, 5 points for 2B or CF, 3 for 3B, 2 for LF or RF, and 1 for 1B. I don't have the OF distribution, so I give 3 points for OF (requires at least 82 games as the position).
+...
+[19] ...
+</pre></li>
+<li>Michael Freiman's paper in JQAS a few years back. Random Forests for 0/1 induction into HOF.</li>
+<li>Mills and Salaga, 2011 JQAS paper using random forests as well.</li>
+</ul></li>
+<li>Most of these focus on the yes/no question of induction, rather than predicting voting percentages.</li>
 </ul>
-</section>
-<section id="back-to-the-data-what-predictors-should-we-use" class="slide level1">
-<h1>Back to the data: what predictors should we use?</h1>
-</section>
-<section id="a-simple-model-lay-out-the-equation" class="slide level1">
+</div>
+<div id="what-predictors-should-we-use" class="slide section level1">
+<h1>What predictors should we use?</h1>
+</div>
+<div id="a-simple-model-lay-out-the-equation" class="slide section level1">
 <h1>A simple model: lay out the equation</h1>
-</section>
-<section id="show-the-r-code-to-do-logistic-regression" class="slide level1">
+</div>
+<div id="show-the-r-code-to-do-logistic-regression" class="slide section level1">
 <h1>Show the R code to do logistic regression</h1>
-</section>
-<section id="show-results-of-the-regression" class="slide level1">
+</div>
+<div id="show-results-of-the-regression" class="slide section level1">
 <h1>Show results of the regression</h1>
-</section>
-<section id="show-the-residuals" class="slide level1">
+</div>
+<div id="show-the-residuals" class="slide section level1">
 <h1>Show the residuals</h1>
-</section>
-<section id="model-2-additional-variables" class="slide level1">
+</div>
+<div id="model-2-additional-variables" class="slide section level1">
 <h1>Model 2 additional variables</h1>
-</section>
-<section id="model-2-residuals" class="slide level1">
+</div>
+<div id="model-2-residuals" class="slide section level1">
 <h1>Model 2 residuals</h1>
-</section>
-<section id="model-3-additional-variables" class="slide level1">
+</div>
+<div id="model-3-additional-variables" class="slide section level1">
 <h1>Model 3 additional variables</h1>
-</section>
-<section id="model-3-residuals" class="slide level1">
+</div>
+<div id="model-3-residuals" class="slide section level1">
 <h1>Model 3 residuals</h1>
-</section>
-<section id="results" class="slide level1">
+</div>
+<div id="results" class="slide section level1">
 <h1>2014 results</h1>
-</section>
-<section id="predictions" class="slide level1">
+</div>
+<div id="predictions" class="slide section level1">
 <h1>2015 predictions</h1>
-</section>
-<section id="additional-templates" class="slide level1">
-<h1>Additional templates</h1>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(speed, dist, <span class="dt">data =</span> cars) +<span class="st"> </span><span class="kw">geom_smooth</span>()</code></pre>
-<p><img src="figure/graphics.png" title="A scatterplot of `cars`" alt="A scatterplot of `cars`" width="500" /></p>
-</section>
-<section id="last-slide" class="slide level1">
-<h1>Last Slide</h1>
-<p>I just added this as a test:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>), <span class="kw">rnorm</span>(<span class="dv">100</span>), <span class="dt">pch=</span><span class="dv">19</span>, <span class="dt">col=</span><span class="kw">sample</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dv">100</span>, <span class="dt">replace=</span><span class="ot">TRUE</span>))</code></pre>
-<p><img src="figure/last-slide.png" title="plot of chunk last-slide" alt="plot of chunk last-slide" width="300" /></p>
-</section>
-<!-- {{{{ dzslides core
-#
-#
-#     __  __  __       .  __   ___  __
-#    |  \  / /__` |    | |  \ |__  /__`
-#    |__/ /_ .__/ |___ | |__/ |___ .__/ core :€
-#
-#
-# The following block of code is not supposed to be edited.
-# But if you want to change the behavior of these slides,
-# feel free to hack it!
-#
--->
-
-<div id="progress-bar"></div>
-
-<!-- Default Style -->
-<style>
-  * { margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
-  details { display: none; }
-  body {
-    width: 800px; height: 600px;
-    margin-left: -400px; margin-top: -300px;
-    position: absolute; top: 50%; left: 50%;
-    overflow: hidden;
-  }
-  section {
-    position: absolute;
-    pointer-events: none;
-    width: 100%; height: 100%;
-  }
-  section[aria-selected] { pointer-events: auto; }
-  html { overflow: hidden; }
-  body { display: none; }
-  body.loaded { display: block; }
-  .incremental {visibility: hidden; }
-  .incremental[active] {visibility: visible; }
-  #progress-bar{
-    bottom: 0;
-    position: absolute;
-    -moz-transition: width 400ms linear 0s;
-    -webkit-transition: width 400ms linear 0s;
-    -ms-transition: width 400ms linear 0s;
-    transition: width 400ms linear 0s;
-  }
-  figure {
-    width: 100%;
-    height: 100%;
-  }
-  figure > * {
-    position: absolute;
-  }
-  figure > img, figure > video {
-    width: 100%; height: 100%;
-  }
-</style>
-
-<script>
-  var Dz = {
-    remoteWindows: [],
-    idx: -1,
-    step: 0,
-    slides: null,
-    progressBar : null,
-    params: {
-      autoplay: "1"
-    }
-  };
-
-  Dz.init = function() {
-    document.body.className = "loaded";
-    this.slides = $$("body > section");
-    this.progressBar = $("#progress-bar");
-    this.setupParams();
-    this.onhashchange();
-    this.setupTouchEvents();
-    this.onresize();
-  }
-  
-  Dz.setupParams = function() {
-    var p = window.location.search.substr(1).split('&');
-    p.forEach(function(e, i, a) {
-      var keyVal = e.split('=');
-      Dz.params[keyVal[0]] = decodeURIComponent(keyVal[1]);
-    });
-  // Specific params handling
-    if (!+this.params.autoplay)
-      $$.forEach($$("video"), function(v){ v.controls = true });
-  }
-
-  Dz.onkeydown = function(aEvent) {
-    // Don't intercept keyboard shortcuts
-    if (aEvent.altKey
-      || aEvent.ctrlKey
-      || aEvent.metaKey
-      || aEvent.shiftKey) {
-      return;
-    }
-    if ( aEvent.keyCode == 37 // left arrow
-      || aEvent.keyCode == 38 // up arrow
-      || aEvent.keyCode == 33 // page up
-    ) {
-      aEvent.preventDefault();
-      this.back();
-    }
-    if ( aEvent.keyCode == 39 // right arrow
-      || aEvent.keyCode == 40 // down arrow
-      || aEvent.keyCode == 34 // page down
-    ) {
-      aEvent.preventDefault();
-      this.forward();
-    }
-    if (aEvent.keyCode == 35) { // end
-      aEvent.preventDefault();
-      this.goEnd();
-    }
-    if (aEvent.keyCode == 36) { // home
-      aEvent.preventDefault();
-      this.goStart();
-    }
-    if (aEvent.keyCode == 32) { // space
-      aEvent.preventDefault();
-      this.toggleContent();
-    }
-    if (aEvent.keyCode == 70) { // f
-      aEvent.preventDefault();
-      this.goFullscreen();
-    }
-  }
-
-  /* Touch Events */
-
-  Dz.setupTouchEvents = function() {
-    var orgX, newX;
-    var tracking = false;
-
-    var db = document.body;
-    db.addEventListener("touchstart", start.bind(this), false);
-    db.addEventListener("touchmove", move.bind(this), false);
-
-    function start(aEvent) {
-      aEvent.preventDefault();
-      tracking = true;
-      orgX = aEvent.changedTouches[0].pageX;
-    }
-
-    function move(aEvent) {
-      if (!tracking) return;
-      newX = aEvent.changedTouches[0].pageX;
-      if (orgX - newX > 100) {
-        tracking = false;
-        this.forward();
-      } else {
-        if (orgX - newX < -100) {
-          tracking = false;
-          this.back();
-        }
-      }
-    }
-  }
-
-  /* Adapt the size of the slides to the window */
-
-  Dz.onresize = function() {
-    var db = document.body;
-    var sx = db.clientWidth / window.innerWidth;
-    var sy = db.clientHeight / window.innerHeight;
-    var transform = "scale(" + (1/Math.max(sx, sy)) + ")";
-
-    db.style.MozTransform = transform;
-    db.style.WebkitTransform = transform;
-    db.style.OTransform = transform;
-    db.style.msTransform = transform;
-    db.style.transform = transform;
-  }
-
-
-  Dz.getDetails = function(aIdx) {
-    var s = $("section:nth-of-type(" + aIdx + ")");
-    var d = s.$("details");
-    return d ? d.innerHTML : "";
-  }
-
-  Dz.onmessage = function(aEvent) {
-    var argv = aEvent.data.split(" "), argc = argv.length;
-    argv.forEach(function(e, i, a) { a[i] = decodeURIComponent(e) });
-    var win = aEvent.source;
-    if (argv[0] === "REGISTER" && argc === 1) {
-      this.remoteWindows.push(win);
-      this.postMsg(win, "REGISTERED", document.title, this.slides.length);
-      this.postMsg(win, "CURSOR", this.idx + "." + this.step);
-      return;
-    }
-    if (argv[0] === "BACK" && argc === 1)
-      this.back();
-    if (argv[0] === "FORWARD" && argc === 1)
-      this.forward();
-    if (argv[0] === "START" && argc === 1)
-      this.goStart();
-    if (argv[0] === "END" && argc === 1)
-      this.goEnd();
-    if (argv[0] === "TOGGLE_CONTENT" && argc === 1)
-      this.toggleContent();
-    if (argv[0] === "SET_CURSOR" && argc === 2)
-      window.location.hash = "#" + argv[1];
-    if (argv[0] === "GET_CURSOR" && argc === 1)
-      this.postMsg(win, "CURSOR", this.idx + "." + this.step);
-    if (argv[0] === "GET_NOTES" && argc === 1)
-      this.postMsg(win, "NOTES", this.getDetails(this.idx));
-  }
-
-  Dz.toggleContent = function() {
-    // If a Video is present in this new slide, play it.
-    // If a Video is present in the previous slide, stop it.
-    var s = $("section[aria-selected]");
-    if (s) {
-      var video = s.$("video");
-      if (video) {
-        if (video.ended || video.paused) {
-          video.play();
-        } else {
-          video.pause();
-        }
-      }
-    }
-  }
-
-  Dz.setCursor = function(aIdx, aStep) {
-    // If the user change the slide number in the URL bar, jump
-    // to this slide.
-    aStep = (aStep != 0 && typeof aStep !== "undefined") ? "." + aStep : ".0";
-    window.location.hash = "#" + aIdx + aStep;
-  }
-
-  Dz.onhashchange = function() {
-    var cursor = window.location.hash.split("#"),
-        newidx = 1,
-        newstep = 0;
-    if (cursor.length == 2) {
-      newidx = ~~cursor[1].split(".")[0];
-      newstep = ~~cursor[1].split(".")[1];
-      if (newstep > Dz.slides[newidx - 1].$$('.incremental > *').length) {
-        newstep = 0;
-        newidx++;
-      }
-    }
-    this.setProgress(newidx, newstep);
-    if (newidx != this.idx) {
-      this.setSlide(newidx);
-    }
-    if (newstep != this.step) {
-      this.setIncremental(newstep);
-    }
-    for (var i = 0; i < this.remoteWindows.length; i++) {
-      this.postMsg(this.remoteWindows[i], "CURSOR", this.idx + "." + this.step);
-    }
-  }
-
-  Dz.back = function() {
-    if (this.idx == 1 && this.step == 0) {
-      return;
-    }
-    if (this.step == 0) {
-      this.setCursor(this.idx - 1,
-                     this.slides[this.idx - 2].$$('.incremental > *').length);
-    } else {
-      this.setCursor(this.idx, this.step - 1);
-    }
-  }
-
-  Dz.forward = function() {
-    if (this.idx >= this.slides.length &&
-        this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
-        return;
-    }
-    if (this.step >= this.slides[this.idx - 1].$$('.incremental > *').length) {
-      this.setCursor(this.idx + 1, 0);
-    } else {
-      this.setCursor(this.idx, this.step + 1);
-    }
-  }
-
-  Dz.goStart = function() {
-    this.setCursor(1, 0);
-  }
-
-  Dz.goEnd = function() {
-    var lastIdx = this.slides.length;
-    var lastStep = this.slides[lastIdx - 1].$$('.incremental > *').length;
-    this.setCursor(lastIdx, lastStep);
-  }
-
-  Dz.setSlide = function(aIdx) {
-    this.idx = aIdx;
-    var old = $("section[aria-selected]");
-    var next = $("section:nth-of-type("+ this.idx +")");
-    if (old) {
-      old.removeAttribute("aria-selected");
-      var video = old.$("video");
-      if (video) {
-        video.pause();
-      }
-    }
-    if (next) {
-      next.setAttribute("aria-selected", "true");
-      var video = next.$("video");
-      if (video && !!+this.params.autoplay) {
-        video.play();
-      }
-    } else {
-      // That should not happen
-      this.idx = -1;
-      // console.warn("Slide doesn't exist.");
-    }
-  }
-
-  Dz.setIncremental = function(aStep) {
-    this.step = aStep;
-    var old = this.slides[this.idx - 1].$('.incremental > *[aria-selected]');
-    if (old) {
-      old.removeAttribute('aria-selected');
-    }
-    var incrementals = $$('.incremental');
-    if (this.step <= 0) {
-      $$.forEach(incrementals, function(aNode) {
-        aNode.removeAttribute('active');
-      });
-      return;
-    }
-    var next = this.slides[this.idx - 1].$$('.incremental > *')[this.step - 1];
-    if (next) {
-      next.setAttribute('aria-selected', true);
-      next.parentNode.setAttribute('active', true);
-      var found = false;
-      $$.forEach(incrementals, function(aNode) {
-        if (aNode != next.parentNode)
-          if (found)
-            aNode.removeAttribute('active');
-          else
-            aNode.setAttribute('active', true);
-        else
-          found = true;
-      });
-    } else {
-      setCursor(this.idx, 0);
-    }
-    return next;
-  }
-
-  Dz.goFullscreen = function() {
-    var html = $('html'),
-        requestFullscreen = html.requestFullscreen || html.requestFullScreen || html.mozRequestFullScreen || html.webkitRequestFullScreen;
-    if (requestFullscreen) {
-      requestFullscreen.apply(html);
-    }
-  }
-  
-  Dz.setProgress = function(aIdx, aStep) {
-    var slide = $("section:nth-of-type("+ aIdx +")");
-    if (!slide)
-      return;
-    var steps = slide.$$('.incremental > *').length + 1,
-        slideSize = 100 / (this.slides.length - 1),
-        stepSize = slideSize / steps;
-    this.progressBar.style.width = ((aIdx - 1) * slideSize + aStep * stepSize) + '%';
-  }
-  
-  Dz.postMsg = function(aWin, aMsg) { // [arg0, [arg1...]]
-    aMsg = [aMsg];
-    for (var i = 2; i < arguments.length; i++)
-      aMsg.push(encodeURIComponent(arguments[i]));
-    aWin.postMessage(aMsg.join(" "), "*");
-  }
-  
-  function init() {
-    Dz.init();
-    window.onkeydown = Dz.onkeydown.bind(Dz);
-    window.onresize = Dz.onresize.bind(Dz);
-    window.onhashchange = Dz.onhashchange.bind(Dz);
-    window.onmessage = Dz.onmessage.bind(Dz);
-  }
-
-  window.onload = init;
-</script>
-
-
-<script> // Helpers
-  if (!Function.prototype.bind) {
-    Function.prototype.bind = function (oThis) {
-
-      // closest thing possible to the ECMAScript 5 internal IsCallable
-      // function 
-      if (typeof this !== "function")
-      throw new TypeError(
-        "Function.prototype.bind - what is trying to be fBound is not callable"
-      );
-
-      var aArgs = Array.prototype.slice.call(arguments, 1),
-          fToBind = this,
-          fNOP = function () {},
-          fBound = function () {
-            return fToBind.apply( this instanceof fNOP ? this : oThis || window,
-                   aArgs.concat(Array.prototype.slice.call(arguments)));
-          };
-
-      fNOP.prototype = this.prototype;
-      fBound.prototype = new fNOP();
-
-      return fBound;
-    };
-  }
-
-  var $ = (HTMLElement.prototype.$ = function(aQuery) {
-    return this.querySelector(aQuery);
-  }).bind(document);
-
-  var $$ = (HTMLElement.prototype.$$ = function(aQuery) {
-    return this.querySelectorAll(aQuery);
-  }).bind(document);
-
-  $$.forEach = function(nodeList, fun) {
-    Array.prototype.forEach.call(nodeList, fun);
-  }
-
-</script>
-<!-- vim: set fdm=marker: }}} -->
+</div>
 </body>
 </html>

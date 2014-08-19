@@ -1,0 +1,10 @@
+arm
+base
+ggplot2
+highlight
+knitr
+lme4
+MASS
+Matrix
+Rcpp
+rmarkdown

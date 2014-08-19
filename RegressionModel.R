@@ -11,8 +11,8 @@ expit <- function(x) exp(x)/(1+exp(x))
 library(arm)
 
 # New data:
-#data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
-data <- read.csv(file="HOFregression.csv", as.is=TRUE)
+data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
+#data2 <- read.csv(file="HOFregression.csv", as.is=TRUE)
 n <- dim(data)[1]
 
 # get number of unique players:
@@ -122,9 +122,11 @@ var.names <- as.list(rep(NA, nt))
 
 
 # R0: Baseline model: Just use main career statistics for batters and pitchers, and position for batters:
-var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", "BA", "OBP", "SLG",
+var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", 
+                    "BA", "OBP", "SLG",
                     "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", "posCF", "posRF")
-var.names[[2]] <- c("Yrs", "W", "L", "ERA", "WHIP", "G.1", "GS", "SV", "IP", "H.1", "HR.1", "BB.1", "SO")
+var.names[[2]] <- c("Yrs", "W", "L", "G.1", "GS", "SV", "IP", "H.1", "HR.1", "BB.1", "SO",
+                    "ERA", "WHIP")
 var.names[[3]] <- c("prev1")  # for returning players, just use the previous year's voting percentage as the sole predictor
 
 
@@ -236,11 +238,14 @@ for (i in 1:lt) {
 }
 
 # Plot in-sample vs. out-of-sample rmse:
+titles <- c("1st-Ballot Batters", "1st-Ballot Pitchers", "Returning Players")
 par(mfrow=c(1, 3))
 for (j in 1:3) {
   plot(1997:max(data[, "Year"]), in.samp[, j], type="l", ylim=range(c(in.samp[, j], out.samp[-lt, j])), 
        las=1, ylab="RMSE", xlab="Year")
   lines(1997:(max(data[, "Year"]) - 1), out.samp[-lt, j], lty=2)
+  title(main=titles[j])
+  legend("topright", inset=0.01, lty=c(1, 2), legend=c("In-sample", "Out-of-sample"))
 }
 
 # Compute residuals:
@@ -446,12 +451,24 @@ abline(h = 0, lty=2)
 
 
 
+# Simple plots:
+par(mfrow=c(1, 2))
+sel <- data[, "Name"] == "Alan Trammell"
+plot(data[sel, "Year"], data[sel, "p"], ylim=c(0, 1), las=1, pch=19, xlab="Year", ylab="Voting Proportion")
+lines(data[sel, "Year"], data[sel, "p"])
+title(main="Alan Trammell")
+abline(h = 0.05, col=2, lwd=2)
+abline(h = 0.75, col=3, lwd=2)
+
 # end of file
-
-
 
 library(knitr)
 knit("HOF_vis_model.Rmd")
-# pandoc -s -S -i -t dzslides --mathjax HOF_vis_model.md -o HOF_vis_model.html
+system('pandoc -s -t slidy HOF_vis_model.md -o HOF_vis_model.html')
+
+
+# pandoc -s -t slidy HOF_vis_model.md -o HOF_vis_model.html
+#render("HOF_vis_model.Rmd", html_document())
+
 
 
