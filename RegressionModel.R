@@ -4,15 +4,14 @@ setwd("~/Git/HOFmodel/")
 lu <- function(x) length(unique(x))
 su <- function(x) sort(unique(x))
 count.na <- function(x) sum(is.na(x))
-logit <- function(x) log(x/(1-x))
-expit <- function(x) exp(x)/(1+exp(x))
+logit <- function(x) log(x/(1 - x))
+expit <- function(x) exp(x)/(1 + exp(x))
 
 # Load a library to do Bayesian generalized linear models:
 library(arm)
 
 # New data:
-data <- read.csv(file="HOFregression_updated.csv", as.is=TRUE)
-#data2 <- read.csv(file="HOFregression.csv", as.is=TRUE)
+data <- read.csv(file = "HOFregression_updated_20151228.csv", as.is=TRUE)
 n <- dim(data)[1]
 
 # get number of unique players:
@@ -20,14 +19,15 @@ np <- lu(data[, "Name"])
 
 # Get number of ballots each year:
 nb <- aggregate(data[, "NumBallots"], list(year=data[, "Year"]), median)[, 2]
-# I've assumed 571 for 2015, the same number as 2014
+# I've assumed 450 for 2016
 
 # Create variables for previous year's vote, for 1 up to 14 previous years:
 prev <- matrix(0, n, 14)
 for (i in 1:n) {
   if (data[i, "YoB"] > 1) {
     sel <- data[, "Name"] == data[i, "Name"] & data[, "YoB"] < data[i, "YoB"]
-    prev[i, 1:sum(sel)] <- data[sel, "p"][order(data[sel, "Year"], decreasing=TRUE)]
+    prev[i, 1:sum(sel)] <- data[sel, "p"][order(data[sel, "Year"], 
+                                                decreasing = TRUE)]
   }
 }
 colnames(prev) <- paste0("prev", 1:14)
@@ -38,42 +38,53 @@ AllStarpy <- data[, "all.star"]/data[, "Yrs"]
 data <- cbind(data, AllStarpy)
 
 # Add indicators for 8 batting positions (DH is the baseline)
-for (i in c("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF")) assign(paste0("pos", i), as.numeric(data[, "Position"] == i))
+for (i in c("C", "1B", "2B", "3B", "SS", "LF", "CF", "RF")) {
+  assign(paste0("pos", i), as.numeric(data[, "Position"] == i))
+}
 data <- cbind(data, posC, pos1B, pos2B, pos3B, posSS, posLF, posCF, posRF)
 
 # Add in previous year's vote squared
 prev1.squared <- data[, "prev1"]^2
 data <- cbind(data, prev1.squared)
 
-# Add the mean vote percentage of the top-k (k = 1, 2, 3, 4, 5) first-year ballot players in each year:
+# Add the mean vote percentage of the top-k (k = 1, 2, 3, 4, 5) first-year 
+# ballot players in each year:
 # Idea is that this will provide a variable to account for 'crowded' ballots:
 ny <- lu(data[, "Year"])
 first.ballot.crowd <- matrix(NA, ny, 5)
 for (i in 1:ny) {
   for (k in 1:5) {
   	sel <- data[, "Year"] == su(data[, "Year"])[i] & data[, "YoB"] == 1
-  	if (i == 7) {  # special case for 1973, when Roberto Clemente was a special election:
-  	  first.ballot.crowd[i, k] <- mean(sort(data[sel & data[, "Name"] != "Roberto Clemente", "p"], decreasing=TRUE)[1:k], na.rm=TRUE)
+  	if (i == 7) {  # special case for 1973 (Roberto Clemente special election)
+      tmp <- data[sel & data[, "Name"] != "Roberto Clemente", "p"]
+      tmp <- sort(tmp, decreasing = TRUE)[1:k]
+  	  first.ballot.crowd[i, k] <- mean(tmp, na.rm = TRUE)
   	} else {
-  	  first.ballot.crowd[i, k] <- mean(sort(data[sel, "p"], decreasing=TRUE)[1:k], na.rm=TRUE)  	  
+  	  tmp <- sort(data[sel, "p"], decreasing = TRUE)[1:k]
+  	  first.ballot.crowd[i, k] <- mean(tmp, na.rm = TRUE)  	  
   	}
   }
 }
 rownames(first.ballot.crowd) <- 1967:max(data[, "Year"])
 
 fb <- matrix(NA, n, 5)
-for (k in 1:5) fb[, k] <- first.ballot.crowd[(1:ny)[data[, "Year"] - 1966], k]
+for (k in 1:5) {
+  fb[, k] <- first.ballot.crowd[(1:ny)[data[, "Year"] - 1966], k]
+}
 colnames(fb) <- paste0("top", 1:5)
 
 # Append these to the data:
 data <- cbind(data, fb)
 
-# Add the mean vote percentage of the top-5 returning ballot players in each year:
+# Add the mean vote % of the top-5 returning ballot players in each year:
 return.ballot.crowd <- numeric(ny)
 for (i in 1:ny) {
-  sel <- data[, "Year"] == su(data[, "Year"])[i] - 1 & data[, "YoB"] > 1 & data[, "YoB"] < 15
+  sel <- data[, "Year"] == su(data[, "Year"])[i] - 1 & 
+         data[, "YoB"] > 1 & 
+         data[, "YoB"] < 15
   if (sum(sel) > 0) {
-    return.ballot.crowd[i] <- mean(sort(data[sel, "p"], decreasing=TRUE)[1:5], na.rm=TRUE)
+  	tmp <- sort(data[sel, "p"], decreasing = TRUE)[1:5]
+    return.ballot.crowd[i] <- mean(tmp, na.rm = TRUE)
   }
 }
 rb <- return.ballot.crowd[(1:ny)[data[, "Year"] - 1966]]
@@ -88,14 +99,22 @@ w300 <- as.numeric(data[, "W"] >= 300)
 k3000 <- as.numeric(data[, "SO"] >= 3000)
 data <- cbind(data, hr500, h3000, w300, k3000)
 
-# Create indicator variables for 2nd ballot and 15th ballot (players are thought to get an extra bump 
-# in these two situations)
+# Create indicator variables for 2nd ballot and 15th ballot (players are 
+# thought to get an extra bump in these two situations)
 ballot2 <- as.numeric(data[, "YoB"] == 2)
 ballotfinal <- as.numeric(data[, "YoB"] == 15)
 data <- cbind(data, ballot2, ballotfinal)
 
-ballot2.x.prev1 <- data[, "ballot2"]*data[, "prev1"]  # Interaction between 2nd year and 1st year percentage
+# Interaction between 2nd year and 1st year percentage
+ballot2.x.prev1 <- data[, "ballot2"]*data[, "prev1"]
 data <- cbind(data, ballot2.x.prev1)
+
+# interaction between slugging and drugs:
+slgdrugs <- as.numeric(data[, "SLG"]*data[, "drugs"])
+hrdrugs <- as.numeric(data[, "HR"]*data[, "drugs"])
+mvpdrugs <- as.numeric(data[, "mvp"]*data[, "drugs"])
+cydrugs <- as.numeric(data[, "cy.young"]*data[, "drugs"])
+data <- cbind(data, slgdrugs, hrdrugs, mvpdrugs, cydrugs)
 
 # Try removing Bonds and Clemens first year:
 #data <- data[-which(data[, "Name"] %in% c("Barry Bonds", "Roger Clemens") & data[, "Year"] == 2013), ]
@@ -113,40 +132,69 @@ type[data[, "Position"] == "P" & data[, "YoB"] == 1] <- 2
 # Type 3 = 2nd or more time on ballot:
 type[data[, "YoB"] > 1] <- 3
 
-# total number of different types (this changed a few times as I tried different models)
+# total number of different types
+# (this changed a few times as I tried different models)
 nt <- lu(type)
 
-# Set up list to hold names of variables to include in the regression model for each type:
+# Set up list to hold names of variables to include in the 
+# regression model for each type:
 var.names <- as.list(rep(NA, nt))
 
 
 
-# R0: Baseline model: Just use main career statistics for batters and pitchers, and position for batters:
+# R0: Baseline model: Just use main career statistics for batters and pitchers
+# and position for batters:
 var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", 
                     "BA", "OBP", "SLG",
-                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", "posCF", "posRF")
-var.names[[2]] <- c("Yrs", "W", "L", "G.1", "GS", "SV", "IP", "H.1", "HR.1", "BB.1", "SO",
-                    "ERA", "WHIP")
-var.names[[3]] <- c("prev1")  # for returning players, just use the previous year's voting percentage as the sole predictor
+                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", 
+                    "posCF", "posRF")
+var.names[[2]] <- c("Yrs", "W", "L", "G.1", "GS", "SV", "IP", "H.1", "HR.1", 
+                    "BB.1", "SO", "ERA", "WHIP")
+# for returning players, just use the previous year's voting percentage
+#  as the sole predictor
+var.names[[3]] <- c("prev1")
 
 
 # R1 with Drugs, all-stars and gold gloves:
-var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", "BA", "OBP", "SLG",
-                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", "posCF", "posRF", "drugs", "AllStarpy", 
-                    "gold.gloves")
-var.names[[2]] <- c("Yrs", "W", "L", "ERA", "WHIP", "G.1", "GS", "SV", "IP", "H.1", "HR.1", "BB.1", "SO", "drugs", 
-                    "AllStarpy", "gold.gloves")
+var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", 
+                    "BA", "OBP", "SLG",
+                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", 
+                    "posCF", "posRF", 
+                    "drugs", "AllStarpy", "gold.gloves")
+var.names[[2]] <- c("Yrs", "W", "L", "G.1", "GS", "SV", "IP", "H.1", "HR.1", 
+                    "BB.1", "SO", "ERA", "WHIP", 
+                    "drugs", "AllStarpy", "gold.gloves")
 var.names[[3]] <- c("prev1")
 
 
 # R6: Add in 1-team and milestones for batters, milestones for pitchers,
 # and add top-3 'crowded ballot' and quadratic term for returning-ballot players:
-var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", "BA", "OBP", "SLG",
-                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", "posCF", "posRF", "drugs", "AllStarpy", 
+var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", 
+                    "BA", "OBP", "SLG",
+                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", 
+                    "posCF", "posRF", "drugs", "AllStarpy", 
                     "gold.gloves", "rookie", "mvp", "oneteam", "hr500", "h3000")
-var.names[[2]] <- c("Yrs", "W", "L", "ERA", "WHIP", "G.1", "GS", "SV", "IP", "H.1", "HR.1", "BB.1", "SO", "drugs", 
-                    "AllStarpy", "gold.gloves", "rookie", "mvp", "cy.young", "w300", "k3000")
-var.names[[3]] <- c("prev1", "prev1.squared", "top3", "rb", "ballot2", "ballotfinal", "ballot2.x.prev1")
+var.names[[2]] <- c("Yrs", "W", "L", "ERA", "WHIP", "G.1", "GS", "SV", "IP", 
+                    "H.1", "HR.1", "BB.1", "SO", "drugs", 
+                    "AllStarpy", "gold.gloves", "rookie", "mvp", "cy.young", 
+                    "w300", "k3000")
+var.names[[3]] <- c("prev1", "prev1.squared", "top3", "rb", "ballot2", 
+                    "ballotfinal", "ballot2.x.prev1")
+
+# Add in the interaction effect between drug suspicion and a few other variables:
+var.names[[1]] <- c("Yrs", "G", "AB", "R", "H", "HR", "RBI", "SB", "BB", "BA", 
+                    "OBP", "SLG",
+                    "posC", "pos1B", "pos2B", "pos3B", "posSS", "posLF", 
+                    "posCF", "posRF", "drugs", "AllStarpy", 
+                    "gold.gloves", "rookie", "mvp", "oneteam", "hr500", 
+                    "h3000", "slgdrugs", "hrdrugs", "mvpdrugs")
+var.names[[2]] <- c("Yrs", "W", "L", "ERA", "WHIP", "G.1", "GS", "SV", "IP", 
+                    "H.1", "HR.1", "BB.1", "SO", "drugs", 
+                    "AllStarpy", "gold.gloves", "rookie", "mvp", "cy.young", 
+                    "w300", "k3000", "cydrugs")
+var.names[[3]] <- c("prev1", "prev1.squared", "top3", "rb", "ballot2", 
+                    "ballotfinal", "ballot2.x.prev1")
+
 
 
 
@@ -173,7 +221,9 @@ for (t in 1997:max(data[, "Year"])) {
 
     # Set up the design matrix for this type of prediction:
     if (j %in% 1:2) sel <- type == j & data[, "Year"] < t
-    if (j > 2) sel <- type == j & data[, "Year"] < t & data[, "prev1"] >= 0.05
+    if (j > 2) {
+      sel <- type == j & data[, "Year"] < t & data[, "prev1"] >= 0.05
+    }
     X.mat <- as.matrix(data[sel, var.names[[j]]])
 
     # Scale the inputs, keeping the means and sds:
@@ -185,8 +235,10 @@ for (t in 1997:max(data[, "Year"])) {
     }
     
     # Fit the model using weak priors:
-    fit <- bayesglm(data[sel, "p"] ~ X.scale, weights=data[sel, "NumBallots"], family=binomial(link = "logit"), 
-                    prior.mean=0, prior.scale=2.5)
+    fit <- bayesglm(data[sel, "p"] ~ X.scale, 
+                    weights = data[sel, "NumBallots"], 
+                    family = binomial(link = "logit"), 
+                    prior.mean = 0, prior.scale = 2.5)
     in.samp[t - 1996, j] <- sd(fit$fitted.values - data[sel, "p"])
     
     # Store the coefficients:
@@ -198,22 +250,26 @@ for (t in 1997:max(data[, "Year"])) {
     if (sum(sel.test) > 0) {
       X.mat <- as.matrix(data[sel.test, var.names[[j]]])
       if (t > 2013 & j == 3 & "top3" %in% var.names[[j]]) {
-      	X.mat[, "top3"] <- mean(sort(pred[data[, "Year"] == t & type %in% 1:2], decreasing=TRUE)[1:3], na.rm=TRUE)
+      	tmp <- pred[data[, "Year"] == t & type %in% 1:2]
+      	X.mat[, "top3"] <- mean(sort(tmp, decreasing = TRUE)[1:3], na.rm = TRUE)
       }
       X.scale <- X.mat
       for (i in 1:dim(X.mat)[2]) {
         if (x.sd[i] != 0) X.scale[, i] <- (X.mat[, i] - x.mean[i])/x.sd[i]
       }
       beta <- mvrnorm(1000, mu=coef(fit), Sigma=summary(fit)$cov.scaled)
-      pred[sel.test] <- expit(coef(fit)[1] + X.scale %*% matrix(coef(fit)[-1], ncol=1))
+      pred[sel.test] <- expit(coef(fit)[1] + 
+                        X.scale %*% matrix(coef(fit)[-1], ncol = 1))
       pred.sim <- expit(beta[,1] + X.scale %*% t(beta[, -1]))
-      votes.sim <- matrix(rbinom(sum(sel.test)*1000, size=nb[t - 1966], prob=pred.sim), sum(sel.test), 1000)/nb[t - 1966]
+      v.tmp <- rbinom(sum(sel.test)*1000, size = nb[t - 1966], prob = pred.sim)
+      votes.sim <- matrix(v.tmp, sum(sel.test), 1000)/nb[t - 1966]
       pred.mat[sel.test, ] <- t(apply(votes.sim, 1, qbounds))
     }
   }
 }
 
-# For M1, M2, and M3, replace regression-based predictions for returning players with their prevoius year's values:
+# For M1, M2, and M3, replace regression-based predictions for returning players
+# with their prevoius year's values:
 #pred[type == 3] <- data[type == 3, "prev1"]
 
 # Look at overall rmse:
@@ -224,7 +280,9 @@ rmse <- sqrt(mean((pred[sel.pred] - data[sel.pred, "p"])^2))
 rmse.vec <- numeric(nt)
 sel.vec <- as.list(rep(NA, nt))
 for (j in 1:3) sel.vec[[j]] <- sel.pred & type == j
-for (i in 1:nt) rmse.vec[i] <- sqrt(mean((pred[sel.vec[[i]]] - data[sel.vec[[i]], "p"])^2))
+for (i in 1:nt) {
+  rmse.vec[i] <- sqrt(mean((pred[sel.vec[[i]]] - data[sel.vec[[i]], "p"])^2))
+}
 
 # Compute out-of-sample rmse by year and type:
 out.samp <- matrix(NA, lt, 3)
@@ -241,11 +299,17 @@ for (i in 1:lt) {
 titles <- c("1st-Ballot Batters", "1st-Ballot Pitchers", "Returning Players")
 par(mfrow=c(1, 3))
 for (j in 1:3) {
-  plot(1997:max(data[, "Year"]), in.samp[, j], type="l", ylim=range(c(in.samp[, j], out.samp[-lt, j])), 
-       las=1, ylab="RMSE", xlab="Year")
+  plot(x = 1997:max(data[, "Year"]), 
+       y = in.samp[, j], 
+       type="l", 
+       ylim=range(c(in.samp[, j], out.samp[-lt, j])), 
+       las=1, 
+       ylab="RMSE", 
+       xlab="Year")
   lines(1997:(max(data[, "Year"]) - 1), out.samp[-lt, j], lty=2)
   title(main=titles[j])
-  legend("topright", inset=0.01, lty=c(1, 2), legend=c("In-sample", "Out-of-sample"))
+  legend("topright", inset = 0.01, lty = c(1, 2), 
+         legend = c("In-sample", "Out-of-sample"))
 }
 
 # Compute residuals:
@@ -254,7 +318,8 @@ resids <- data[sel.pred, "p"] - pred[sel.pred]
 # Look at residuals with nametags:
 sel.big <- abs(resids) > 0.1  # select big residuals to display names
 xl <- "Predicted Percentage"
-pdf(file="fig_residuals_with2014.pdf", width=9, height=6)
+#pdf(file="fig_residuals_without2014.pdf", width=9, height=6)
+pdf(file="figures/fig_residuals_M3_without2014.pdf", width=10, height=6.5)
 par(mfrow=c(1, 1))
 plot(pred[sel.pred], resids, type="n", las=1, ylab="Actual Vote % - Predicted Vote %", yaxt="n", xlim=c(0, 1.1), xlab=xl, xaxt="n")
 axis(2, at=seq(-1, 1, 0.2), labels=paste(seq(-100, 100, 20), "%", sep=""), las=1)
@@ -264,6 +329,7 @@ text(pred[sel.pred][sel.big], resids[sel.big], paste(data[sel.pred, "Name"],
      data[sel.pred, "Year"], sep="-")[sel.big], cex=0.6, col=as.numeric(data[sel.pred, "YoB"][sel.big] == 1) + 1)
 points(pred[sel.pred][!sel.big], resids[!sel.big], col=as.numeric(data[sel.pred, "YoB"][!sel.big] == 1) + 1)
 legend("topright", inset=0.01, col=c(1, 2), pch=19, legend=c("Returning Player", "First Ballot"))
+title(main="'Milestones + 1-team + Returning' Model Residuals")
 dev.off()
 
 
@@ -272,13 +338,17 @@ cover50 <- numeric(nt)
 cover95 <- numeric(nt)
 for (j in 1:nt) {
   s <- sel.pred & type == j
-  cover50[j] <- sum(data[s, "p"] > pred.mat[s, 2] & data[s, "p"] < pred.mat[s, 4])/sum(s)
-  cover95[j] <- sum(data[s, "p"] > pred.mat[s, 1] & data[s, "p"] < pred.mat[s, 5])/sum(s)
+  cover50[j] <- sum(data[s, "p"] > pred.mat[s, 2] & 
+                    data[s, "p"] < pred.mat[s, 4])/sum(s)
+  cover95[j] <- sum(data[s, "p"] > pred.mat[s, 1] & 
+                    data[s, "p"] < pred.mat[s, 5])/sum(s)
 }
 
 # 1997 batters example:
 sel1997 <- data[, "Year"] == 1997 & type == 1
-d1997 <- data.frame(Name=data[sel1997, "Name"], Prediction=round(pred[sel1997], 3)*100, Actual=round(data[sel1997, "p"], 3)*100)
+d1997 <- data.frame(Name = data[sel1997, "Name"], 
+                    Prediction = round(pred[sel1997], 3)*100, 
+                    Actual = round(data[sel1997, "p"], 3)*100)
 
 # 1997 batters rmse:
 sqrt(mean((d1997[, 2] - d1997[, 3])^2))
@@ -286,9 +356,10 @@ sqrt(mean((d1997[, 2] - d1997[, 3])^2))
 
 # 2014 results:
 sel2014 <- data[, "Year"] == 2014
-d2014 <- data.frame(Name=data[sel2014, "Name"], Previous=round(data[sel2014, "prev1"], 3)*100, 
-                    Predicted=round(pred[sel2014], 3)*100)
-d2014 <- d2014[order(d2014[, "Predicted"], decreasing=TRUE), ]
+d2014 <- data.frame(Name = data[sel2014, "Name"], 
+                    Previous = round(data[sel2014, "prev1"], 3)*100, 
+                    Predicted = round(pred[sel2014], 3)*100)
+d2014 <- d2014[order(d2014[, "Predicted"], decreasing = TRUE), ]
 rownames(d2014) <- 1:dim(d2014)[1]
 
 # Just first-time ballots:
@@ -296,21 +367,54 @@ first2014 <- d2014[d2014[, 2] == 0, ]
 rownames(first2014) <- 1:dim(first2014)[1]
 
 
-# 2014 results:
+# 2015 results:
 sel2015 <- data[, "Year"] == 2015
-d2015 <- data.frame(Name=data[sel2015, "Name"], Previous=round(data[sel2015, "prev1"], 3)*100, 
-                    Predicted=round(pred[sel2015], 3)*100)
-d2015 <- d2015[order(d2015[, "Predicted"], decreasing=TRUE), ]
+d2015 <- data.frame(Name = data[sel2015, "Name"], 
+                    Previous = round(data[sel2015, "prev1"], 3)*100, 
+                    Predicted = round(pred[sel2015], 3)*100)
+d2015 <- d2015[order(d2015[, "Predicted"], decreasing = TRUE), ]
 rownames(d2015) <- 1:dim(d2015)[1]
+
+
+
+# 2016 predictions:
+sel2016 <- data[, "Year"] == 2016
+d2016 <- data.frame(Name = data[sel2016, "Name"],
+                    YearOnBallot = data[sel2016, "YoB"], 
+                    Previous = round(data[sel2016, "prev1"], 3)*100, 
+                    Predicted = round(pred[sel2016], 3)*100)
+d2016 <- d2016[order(d2016[, "Predicted"], decreasing = TRUE), ]
+rownames(d2016) <- 1:dim(d2016)[1]
+
+
+library(knitr)
+kable(d2016)
+
+
+library(xtable)
+print(xtable(d2016, 
+             align = c("r", "l", "r", "r", "r")), 
+             type = "html")
+             
+             
+
+
+##########################
+### stopped here Dec. 2015
+##########################
+
+
 
                     
 
 # Top and bottom residuals:
-top <- data.frame(data[sel.pred, c("Year", "Name", "p")], Predicted=pred[sel.pred], 
-                  Residual=resids)[order(resids, decreasing=TRUE), ][1:5,]
+top <- data.frame(data[sel.pred, c("Year", "Name", "p")], 
+                  Predicted = pred[sel.pred], 
+                  Residual = resids)[order(resids, decreasing = TRUE), ][1:5,]
 
-bottom <- data.frame(data[sel.pred, c("Year", "Name", "p")], Predicted=pred[sel.pred], 
-                     Residual=resids)[order(resids, decreasing=FALSE), ][1:5,]
+bottom <- data.frame(data[sel.pred, c("Year", "Name", "p")],
+                     Predicted = pred[sel.pred], 
+                     Residual = resids)[order(resids, decreasing=FALSE), ][1:5,]
 
 rownames(top) <- 1:5
 rownames(bottom) <- 1:5
@@ -462,10 +566,11 @@ abline(h = 0.75, col=3, lwd=2)
 
 # end of file
 
+
+# Commands to create slides for Meetup talk:
 library(knitr)
 knit("HOF_vis_model.Rmd")
 system('pandoc -s -t slidy HOF_vis_model.md -o HOF_vis_model.html')
-
 
 # pandoc -s -t slidy HOF_vis_model.md -o HOF_vis_model.html
 #render("HOF_vis_model.Rmd", html_document())
