@@ -1,0 +1,66 @@
+Update [1/10/2014]:
+
+<p>
+The 2014 Baseball HOF <a href='http://www.bbwaa.com'>voting results</a> were announced on Wednesday 1/8, and three players, Greg Maddux, Tom Glavine, and Frank Thomas, all of whom were first-ballot candidates, were elected, receiving votes on about 97%, 91%, and 83% of the 571 ballots. Our model's predictions were... a little off, to say the least. We got Maddux almost exactly right, but we completely whiffed on Thomas and Glavine (whom we predicted to get 64% and 53% of the vote, respectively). More details below:
+</p>
+
+<ol>
+<li>Here is a <a href=''>recap and discussion of the 2014 results</a></li>
+<li>Here are our <a href=''>2015 predictions</a></li>
+<li>And in case you missed it earlier, here's a link to the <a href=''>2014 predictions</a> and the description of the statistical models that we came up with to </li>
+</ol>
+
+
+
+
+The one-year ahead RMSE over the past 17 years (1997-2013) was about 9.1%, and for yesterday's 36 candidates, it was 9.9%, so at least the model performed roughly as well in 2013 as it would have over the past couple of decades.
+
+A few thoughts:
+
+
+
+
+Bugs:
+1. Frank Thomas should be listed as a DH, not a 1B
+2. For current year's predictions, must sort the first-ballot-crowd estimates to create the variable correctly
+3. For past year's predictions, should use first-ballot crowd estimate, rather than actual, to make prediction, probably...
+4. Non-bug: For 1973 predictions, I was correctly not including Roberto Clemente, who was inducted in a special election that year.
+
+
+
+
+
+
+
+Using old data, old code:
+
+> pred[data[, "Year"] == 2014]
+ [1] 0.7416888423 0.7078726962 0.6103359234 0.6429615328 0.5340416975 0.4835728759 0.3917276194 0.3741426227 0.3541818540 0.3370218975 0.3092658047
+[12] 0.1793307849 0.1711979261 0.1381783369 0.1109516056 0.0960164776 0.0839037184 0.9738817232 0.6407177351 0.4237227995 0.5352584755 0.0521238265
+[23] 0.0247380650 0.0949385898 0.0877516072 0.0055178824 0.0015155343 0.0019025702 0.0007178053 0.0139742637 0.0021124601 0.0101258748 0.0005763634
+[34] 0.0026811008 0.0028041753 0.0030429731
+
+
+# matches the website, rounded to tenth of a digit.
+
+
+
+> pred[data[, "Year"] == 2014]
+ [1] 0.7416888421 0.7078726961 0.6103359232 0.6429615332 0.5340416970 0.4835728765 0.3917276194 0.3741426231 0.3541818545 0.3370218973 0.3092658043
+[12] 0.1793307850 0.1711979259 0.1381783372 0.1109516058 0.0960164779 0.0839037186 0.9738817232 0.6407177352 0.4237228003 0.5352584756 0.0521238265
+[23] 0.0247380650 0.0949385897 0.0877516071 0.0055178824 0.0015155343 0.0019025702 0.0007178053 0.0139742637 0.0021124601 0.0101258748 0.0005763634
+[34] 0.0026811008 0.0028041753 0.0030429731
+
+
+
+
+Using new data, and NumBallots = 569 for 2014:
+
+> pred[data[, "Year"] == 2014]
+ [1] 0.7419199321 0.7082292190 0.6109765658 0.6433619747 0.5347564530 0.4843112627 0.3923217981 0.3747354428 0.3547705305 0.3377153207 0.3099317950
+[12] 0.1797898605 0.1716398583 0.1385458458 0.1112521577 0.0962792113 0.0841331609 0.9738817232 0.6407177352 0.4237228003 0.5352584756 0.0521238265
+[23] 0.0247380650 0.0949385897 0.0877516071 0.0055178824 0.0015155343 0.0019025702 0.0007178053 0.0139742637 0.0021124601 0.0101258748 0.0005763634
+[34] 0.0026811008 0.0028041753 0.0030429731
+
+
+
