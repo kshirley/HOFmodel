@@ -9,7 +9,11 @@ count.na <- function(x) sum(is.na(x))
 library(rvest)
 
 # Raw data from previous years:
-data <- read.csv("HOFraw.csv", stringsAsFactors=FALSE, as.is=TRUE)
+# This file was created manually by cutting and posting a bunch of
+# baseball-reference pages together, including the projected 2015 ballot,
+# which was pasted in August 2014 (and contained several players who did
+# not eventually show up on the 2015 ballot).
+data <- read.csv("data/HOFraw.csv", stringsAsFactors = FALSE, as.is = TRUE)
 
 # Read in the 2015 ballot results to add to the raw data:
 new <- read_html(x = "http://www.baseball-reference.com/awards/hof_2015.shtml")
@@ -115,10 +119,10 @@ data <- data.frame(data[, c("Name", "Year", "Votes", "NumBallots")],
                    data[, c(7:39)])
 
 # hof for reference:
-hof <- read.csv("HOFregression.csv", as.is = TRUE)
+#hof <- read.csv("HOFregression.csv", as.is = TRUE)
 
 ## 1 ##  Read in all-star data from 1933 - 2013:
-allstar <- read.csv("allstars.csv", as.is = TRUE)
+allstar <- read.csv("data/allstars.csv", as.is = TRUE)
 allstar[, "Year"] <- as.numeric(gsub(" \\(.\\)", "", allstar[, "Year"]))
 
 # Just unique name + year:
@@ -149,12 +153,12 @@ all.star[which(data[, "Name"] == "Ken Griffey")[2]] <- 3   # senior
 data <- cbind(data, all.star)
 
 ## 2 ## Mitchell Report:
-mitch <- read.csv("mitchell_report.csv", as.is=TRUE)
+mitch <- read.csv("data/mitchell_report.csv", as.is=TRUE)
 mitch[, 1] <- gsub(",", "", mitch[, 1])
 mitchell.report <- as.numeric(data[, "Name"] %in% mitch[, 1])
 
 ## 3 ## Suspended by MLB: (downloaded December 2013)
-suspended <- read.csv("suspended.csv", as.is=TRUE)
+suspended <- read.csv("data/suspended.csv", as.is=TRUE)
 suspended <- as.numeric(data[, "Name"] %in% suspended[, 1])
 # Just Rafael Palmeiro (although others will eventually show up on ballot: 
 # Mike Cameron, Manny Ramirez, Bartolo Colon, Melky Cabrera, Ryan Braun, Nelson Cruz, A-Rod, Miguel Tejada)
@@ -164,14 +168,14 @@ drugs <- mitchell.report + suspended
 data <- cbind(data, drugs)
 
 ## 3 ## Rookie of the Year through 2013:
-roy <- read.csv("roy_raw.csv", as.is=TRUE)
+roy <- read.csv("data/roy_raw.csv", as.is=TRUE)
 roy[, 2] <- gsub(", Jr.", "", roy[, 2])  # fix sandy alomar and cal ripken
 rookie <- numeric(dim(data)[1])
 for (i in 1:dim(data)[1]) rookie[i] <- sum(roy[, 2] == data[i, "Name"])
 data <- cbind(data, rookie)
 
 ## 4 ##  Gold Gloves through 2013:
-gg <- read.csv("goldglove2_raw.csv", as.is = TRUE, header = FALSE)
+gg <- read.csv("data/goldglove2_raw.csv", as.is = TRUE, header = FALSE)
 ny <- diff(which(!is.na(as.numeric(gg[, 1]))))
 dgg <- data.frame(gg[is.na(as.numeric(gg[, 1])), 1:4], 
                   year = c(rep(rep(2013:1958, 2), ny-1), rep(1957, 9)))
@@ -188,7 +192,7 @@ data <- cbind(data, gold.gloves = gold)
 
 
 ## 5 ##  MVP through 2013:
-mvp <- read.csv("mvp_raw.csv", as.is = TRUE)
+mvp <- read.csv("data/mvp_raw.csv", as.is = TRUE)
 mvp[, 2] <- gsub("\\*", "", mvp[, 2])
 mvp[, 2] <- gsub("Cal Ripken Jr.", "Cal Ripken", mvp[, 2])
 mvp[, 2] <- gsub("Ken Griffey Jr.", "Ken Griffey", mvp[, 2])
@@ -203,14 +207,14 @@ mvp.freq[which(data[, "Name"] == "Ken Griffey")[2]] <- 0
 data <- cbind(data, mvp = mvp.freq)
 
 ## 6 ##  Cy Young through 2013:
-cy <- read.csv("cyyoung_raw.csv", as.is=TRUE)
+cy <- read.csv("data/cyyoung_raw.csv", as.is=TRUE)
 cy[, 2] <- gsub(" \\*", "", cy[, 2])
 cy.young <- numeric(dim(data)[1])
 for (i in 1:dim(data)[1]) cy.young[i] <- sum(cy[, 2] == data[i, "Name"])
 data <- cbind(data, cy.young)
 
 ## 8 ## One Team for Whole Career (downloaded through 2011?):
-one <- read.csv("oneteam_raw.csv", as.is=TRUE)
+one <- read.csv("data/oneteam_raw.csv", as.is=TRUE)
 oneteam <- as.numeric(data[, "Name"] %in% one[, 1])
 data <- cbind(data, oneteam)
 

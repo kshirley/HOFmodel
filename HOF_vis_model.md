@@ -190,7 +190,7 @@ abline(h = 0.75, col=3, lwd=2)
 # A few plots in R
 We were really interested in the trajectories of voting percentages of players who had appeared on the ballot multiple times.
 
-<img src="figure/edaplots2.png" title="plot of chunk edaplots2" alt="plot of chunk edaplots2" width="900" />
+![plot of chunk edaplots2](figure/edaplots2-1.png) 
 
 How did these guys end up with such different voting trajectories?
 

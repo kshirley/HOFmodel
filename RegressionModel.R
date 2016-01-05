@@ -318,8 +318,9 @@ resids <- data[sel.pred, "p"] - pred[sel.pred]
 # Look at residuals with nametags:
 sel.big <- abs(resids) > 0.1  # select big residuals to display names
 xl <- "Predicted Percentage"
+
 #pdf(file="fig_residuals_without2014.pdf", width=9, height=6)
-pdf(file="figures/fig_residuals_M3_without2014.pdf", width=10, height=6.5)
+#pdf(file="figures/fig_residuals_M3_without2014.pdf", width=10, height=6.5)
 par(mfrow=c(1, 1))
 plot(pred[sel.pred], resids, type="n", las=1, ylab="Actual Vote % - Predicted Vote %", yaxt="n", xlim=c(0, 1.1), xlab=xl, xaxt="n")
 axis(2, at=seq(-1, 1, 0.2), labels=paste(seq(-100, 100, 20), "%", sep=""), las=1)
@@ -330,7 +331,7 @@ text(pred[sel.pred][sel.big], resids[sel.big], paste(data[sel.pred, "Name"],
 points(pred[sel.pred][!sel.big], resids[!sel.big], col=as.numeric(data[sel.pred, "YoB"][!sel.big] == 1) + 1)
 legend("topright", inset=0.01, col=c(1, 2), pch=19, legend=c("Returning Player", "First Ballot"))
 title(main="'Milestones + 1-team + Returning' Model Residuals")
-dev.off()
+#dev.off()
 
 
 # compute coverage of interval estimates:
