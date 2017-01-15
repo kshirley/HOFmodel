@@ -6,7 +6,7 @@ This repo contains R code to predict the Baseball Hall of Fame vote percentage t
 
 I gave a meetup talk about this project in August of 2014 in NYC (slides <a href="http://www.kennyshirley.com/nycmeetup.html">here</a>), and shared predictions for the 2015 ballot at that time (about 3 months before the ballots were sent out).
 
-[Updated on Jan 15, 2017]:
+<b>[Updated on Jan 15, 2017]:</b>
 
 Below are the model's predictions for 2017:
 
@@ -48,7 +48,6 @@ Below are the model's predictions for 2017:
 |Pat Burrell       |            1|      0.0|       0.0|
 
 <br>
-<br>
 
 These are pretty far off what we're seeing from Ryan Thibodaux's BB HOF tracker, where
 he tallies the votes that are published before the official announcement:
@@ -74,7 +73,11 @@ So maybe I'm not using as fine-grained a variable as necessary for the effect of
 
 - My model has a "played for only one team in his career" variable, and it's kind of cool that the only first-ballot players to whom this variable applies this year are Jorge Posada and Jason Varitek. I hadn't realized they retired the same year. Catchers for rival teams with somewhat mirror-image careers.
 
-[Continued text from 2016 predictions]:
+Kenny Shirley<br>
+Jan 15, 2017
+
+
+<b>[Continued text from 2016 predictions]:</b>
 
 Below are the model's predictions for 2016.
 
