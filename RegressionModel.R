@@ -1,6 +1,6 @@
 # Load a few libraries and set working directory:
-rm(list=ls())
-setwd("~/Git/HOFmodel/")
+rm(list = ls())
+setwd("~/Stats/HOFmodel/")
 lu <- function(x) length(unique(x))
 su <- function(x) sort(unique(x))
 count.na <- function(x) sum(is.na(x))
@@ -11,7 +11,7 @@ expit <- function(x) exp(x)/(1 + exp(x))
 library(arm)
 
 # New data:
-data <- read.csv(file = "HOFregression_updated_20151228.csv", as.is=TRUE)
+data <- read.csv(file = "HOFregression_updated_20170114.csv", as.is=TRUE)
 n <- dim(data)[1]
 
 # get number of unique players:
@@ -275,6 +275,7 @@ for (t in 1997:max(data[, "Year"])) {
 # Look at overall rmse:
 sel.pred <- data[, "Year"] > 1996 & data[, "Year"] < 2014
 rmse <- sqrt(mean((pred[sel.pred] - data[sel.pred, "p"])^2))
+rmse
 
 # Break it down by type:
 rmse.vec <- numeric(nt)
@@ -283,6 +284,7 @@ for (j in 1:3) sel.vec[[j]] <- sel.pred & type == j
 for (i in 1:nt) {
   rmse.vec[i] <- sqrt(mean((pred[sel.vec[[i]]] - data[sel.vec[[i]], "p"])^2))
 }
+rmse.vec
 
 # Compute out-of-sample rmse by year and type:
 out.samp <- matrix(NA, lt, 3)
@@ -397,6 +399,33 @@ print(xtable(d2016,
              align = c("r", "l", "r", "r", "r")), 
              type = "html")
              
+
+
+### 2017 predictions:
+# updated on Jan 14 2017:
+sel2017 <- data[, "Year"] == 2017
+d2017 <- data.frame(Name = data[sel2017, "Name"],
+                    YearOnBallot = data[sel2017, "YoB"], 
+                    Previous = round(data[sel2017, "prev1"], 3)*100, 
+                    Predicted = round(pred[sel2017], 3)*100)
+d2017 <- d2017[order(d2017[, "Predicted"], decreasing = TRUE), ]
+rownames(d2017) <- 1:dim(d2017)[1]
+d2017
+
+
+library(knitr)
+kable(d2017)
+
+
+library(xtable)
+print(xtable(d2017, 
+             align = c("r", "l", "r", "r", "r")), 
+      type = "html")
+
+
+
+
+
              
 
 
