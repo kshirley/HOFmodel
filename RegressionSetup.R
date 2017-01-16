@@ -575,12 +575,15 @@ for (i in 1:n) {
   }
 }
 })
+# takes about 15 minutes.
 
+# form a data frame:
 df <- data.frame(bat, pitch)
 last <- apply(df, 1, max)
 war$last <- last
 
-
+# save the data frame to a .csv file:
+write.csv(war, file = "top-999-career-war.csv", row.names = FALSE)
 
 ### read in the HOF data (all ballots for the last 40 or 50 years)
 data <- read.csv(file="HOFregression_updated_20170114.csv", stringsAsFactors = FALSE)
@@ -588,15 +591,13 @@ data <- read.csv(file="HOFregression_updated_20170114.csv", stringsAsFactors = F
 # Look at non-HOF, not-active players who
 x <- war[war$name %in% data$Name == FALSE & war$hof == 0 & war$active == 0, ]
 
+# filter to those retiring between 1961 and 2011:
 x[x$last <= 2011 & x$last >= 1961, ]
 
+# filter to those retiring between 1921 and 2011:
 x[x$last <= 2011 & x$last >= 1921, ]
 
 
-
-
-x <- full_join(data, war, by = c("Name" = "name", "WAR" = "war"))
-cols <- c("Name", "Year", "Votes", "NumBallots", "p", "YoB")
 
 
 
