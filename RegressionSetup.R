@@ -484,6 +484,119 @@ rownames(data) <- 1:dim(data)[1]
 
 write.csv(data, file="HOFregression_updated_20170114.csv", 
           quote = FALSE, row.names = FALSE)
-#data <- read.csv("HOFregression_updated.csv", as.is=TRUE)
 
 ### EOF
+
+
+
+
+
+################################################################################
+
+# one-off analysis to find out which player in MLB history has highest WAR
+# without getting on the HOF ballot
+
+# Load a few libraries and set working directory:
+rm(list=ls())
+setwd("~/Stats/HOFmodel/")
+lu <- function(x) length(unique(x))
+su <- function(x) sort(unique(x))
+count.na <- function(x) sum(is.na(x))
+
+# load libraries:
+library(rvest)
+
+# Read in the 2015 ballot results to add to the raw data:
+war <- read_html(x = "http://www.baseball-reference.com/leaders/WAR_career.shtml") %>%
+  html_nodes("table") %>% 
+  html_table(fill = TRUE) %>%
+  as.data.frame()
+
+# remove last column:
+war <- war[, 2:3]
+
+# rename columns:
+colnames(war) <- c("name", "war")
+
+# store HOF players, and then remove "+" symbols from name:
+war$hof <- numeric(dim(war)[1])
+hof.index <- grep("+", war$name, fixed = TRUE)
+war$hof[hof.index] <- 1
+war$name <- gsub("+", "", war$name, fixed = TRUE)
+
+# store active players, and remove parenthetical info from names:
+s <- strsplit(war$name, "[\\(\\)]")
+
+# store just the name, and then flag active players:
+war$name <- as.character(str_trim(sapply(s, function(x) x[1])))
+war$active <- as.numeric(sapply(strsplit(sapply(s, function(x) x[2]), ", "), length) == 2)
+
+# remove interior column names:
+war <- war[war$name != "Player", ]
+
+# force WAR to numeric:
+war$war <- as.numeric(war$war)
+
+# replace &nbsp; with regular space in war$name
+war$name <- gsub("[[:space:]]+", " ", war$name)
+
+# we have to get the year of retirement for each player in WAR file:
+war.raw <- read_html(x = "http://www.baseball-reference.com/leaders/WAR_career.shtml")
+
+# Read in the 2015 ballot results to add to the raw data:
+tmp <- war.raw %>%
+  html_nodes("table") %>%
+  html_nodes("a") %>%
+  html_attr("href")
+
+url <- paste0("http://www.baseball-reference.com/", tmp)
+
+# loop through web pages to get last active year for each player:
+n <- dim(war)[1]
+bat <- numeric(n)
+pitch <- numeric(n)
+system.time({
+for (i in 1:n) {
+  if (i %% 5 == 0) print(i)
+  page <- read_html(x = url[i])
+  tb <- page %>% html_nodes("#batting_standard") %>%
+    html_table(fill = TRUE)
+  if (length(tb) > 0) {
+    tb <- tb[[1]]
+    tmp <- gsub("[^0123456789]", "", tb[, 1])
+    bat[i] <- tail(as.numeric(tmp[nchar(tmp) == 4]), 1)
+  }
+  tb <- page %>% html_nodes("#pitching_standard") %>%
+    html_table(fill = TRUE)
+  if (length(tb) > 0) {
+    tb <- tb[[1]]
+    tmp <- gsub("[^0123456789]", "", tb[, 1])
+    pitch[i] <- tail(as.numeric(tmp[nchar(tmp) == 4]), 1)
+  }
+}
+})
+
+df <- data.frame(bat, pitch)
+last <- apply(df, 1, max)
+war$last <- last
+
+
+
+### read in the HOF data (all ballots for the last 40 or 50 years)
+data <- read.csv(file="HOFregression_updated_20170114.csv", stringsAsFactors = FALSE)
+
+# Look at non-HOF, not-active players who
+x <- war[war$name %in% data$Name == FALSE & war$hof == 0 & war$active == 0, ]
+
+x[x$last <= 2011 & x$last >= 1961, ]
+
+x[x$last <= 2011 & x$last >= 1921, ]
+
+
+
+
+x <- full_join(data, war, by = c("Name" = "name", "WAR" = "war"))
+cols <- c("Name", "Year", "Votes", "NumBallots", "p", "YoB")
+
+
+
